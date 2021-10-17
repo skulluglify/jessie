@@ -1,0 +1,15 @@
+#! /usr/bin/env bash
+
+mkdir -p static.bak/temp
+
+cp -r static static.bak/temp/
+
+cd static.bak/temp
+
+zip -r0qy9o static\.zip ./*
+
+mv static\.zip bak
+
+rm -rf static
+
+cd $(dirname $0)  

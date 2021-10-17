@@ -4,27 +4,23 @@ import threading
 import subprocess
 import time
 import os
+import sys
 
-PORT=4747
+PORT = str(os.getenv("PORT") or 4747)
 
 def MainServer():
-    while True:
-
-        with subprocess.Popen(["python", "-m", "http.server", "--directory=" + os.getcwd(), str(PORT)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
-            stdout, stderr = map(lambda x: x.decode("utf-8"), process.communicate());
-            print(stdout, stderr, process.pid);
-
-        time.sleep(2.5);
-
+    with subprocess.Popen(["python", "-m", "http.server", "--directory={dir}".format(dir="./static"), PORT], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
+        stdout, stderr = map(lambda x: x.decode("utf-8"), process.communicate());
+        print(stdout, stderr, process.pid);
 
 def WebView():
     while True:
-
-        with subprocess.Popen(["bash", "demon.webview.sh", str(PORT)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
+        with subprocess.Popen(["bash", "demon.webview.sh", PORT], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as process:
             stdout, stderr = map(lambda x: x.decode("utf-8"), process.communicate());
-            print(stdout, stderr, process.pid);
-
-        time.sleep(2.5);
+            sys.stdout.write("\rstdout {stdout:s} stderr {stderr:s} pid {pid:d}".format(
+                stdout = stdout, stderr = stderr, pid = process.pid
+            ));
+        time.sleep(2);
 
 if str(__name__).upper() in ["__MAIN__"]:
     server = threading.Thread(target=MainServer);
