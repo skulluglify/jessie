@@ -2,7 +2,7 @@
     sk: skulluglify
 */
 
-class skQueryEvent extends Event {
+export class skQueryEvent extends Event {
 
     constructor () {
 
@@ -13,7 +13,7 @@ class skQueryEvent extends Event {
     }
 }
 
-class skQueryReadyEvent extends Event {
+export class skQueryReadyEvent extends Event {
 
     constructor () {
 
@@ -24,7 +24,7 @@ class skQueryReadyEvent extends Event {
     }
 }
 
-class classListSnippet extends Object {
+export class DOMTokenListTrace extends Array {
 
     constructor () {
 
@@ -32,31 +32,29 @@ class classListSnippet extends Object {
 
     }
 
-    add() {}
-    remove() {}
-    contains() {}
-    entries() {}
+    add(...tokens) {}
+    remove(...tokens) {}
+    contains(token) {}
+    entries() { arguments } // Array Iterator
+    get value() {}
 }
 
-class ElementSnippet extends Object {
+export class ElementTrace extends Object {
     
     constructor () {
         
         super();
+
+        this.classList = new DOMTokenListTrace;
     
     }
 
     setAttribute() {}
     getAttribute() {}
-    
-    // classList.add
-    // classList.remove
-    // classList.contains
-    // classList.entries
 
 }
 
-class skQuery extends EventTarget {
+export class skQuery extends EventTarget {
 
     constructor (target = null) {
 
@@ -64,13 +62,13 @@ class skQuery extends EventTarget {
 
         this.target = target;
         this.event = new skQueryEvent;
-        this.uuid = this.GENERATE_UUID_V4;
+        this.uuid = this.GENERATE_RAND_UUID;
 
         this.dispatchEvent(this.event);
     }
 
-    get GENERATE_UUID_V4() {
-        return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+    get GENERATE_RAND_UUID() {
+        return "10000000-1000-1000-1000-100000000000".replace(/[0|1]/g, c =>
             (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
         );
     }
@@ -311,7 +309,7 @@ class skQuery extends EventTarget {
         return obj;
     }
 
-    // ex: let [ elementSnippet, context ] = q.createQuery("div[style=background-color: limegreen; width: 20%; height: 20%; margin: 4%;]#test.smallGroup.union", false);
+    // ex: let [ elementTrace, context ] = q.createQuery("div[style=background-color: limegreen; width: 20%; height: 20%; margin: 4%;]#test.smallGroup.union", false);
     createQuery (context, create = true) {
 
         let attrs, brackets, caches, element, idString, idSession, classlist, classSessions, classCaches, cacheAttrs, obj;
@@ -322,14 +320,14 @@ class skQuery extends EventTarget {
         element = null;
         idString = "";
         idSession = false;
-        classlist = new Array;
+        obj = new ElementTrace;
+        classlist = obj.classList;
         classSessions = false;
         classCaches = "";
         cacheAttrs = "";
-        obj = new ElementSnippet;
 
         if (context && typeof context == "object" && !this.isArray(context)) {
-            if (ElementSnippet.prototype.isPrototypeOf(context)) {
+            if (ElementTrace.prototype.isPrototypeOf(context)) {
                 if (context?.nodeName) {
                     caches = context?.nodeName?.toLowerCase();
                     element = document.createElement(context?.nodeName);
@@ -356,7 +354,7 @@ class skQuery extends EventTarget {
                     return context;
                 }
             }
-            return [ new ElementSnippet, new String ];
+            return [ new ElementTrace, new String ];
         }
 
         function classlist_push() {
@@ -434,7 +432,7 @@ class skQuery extends EventTarget {
         context = caches;
         caches = "";
 
-        if (!(context.length > 0)) return [ new ElementSnippet, new String ]; 
+        if (!(context.length > 0)) return [ new ElementTrace, new String ]; 
 
         obj["nodeName"] = context.toUpperCase();
         if (create) element = document.createElement(context);
@@ -447,7 +445,7 @@ class skQuery extends EventTarget {
 
         if (classlist.length > 0) {
             if (create) element.classList.add(...classlist);
-            obj["classList"] = classlist;
+            // obj["classList"] = classlist;
             classlist.forEach(cls => {
                 context += "\." + cls;
             });
@@ -840,7 +838,7 @@ class skQuery extends EventTarget {
 
 // Queue Main isReady
 
-class skQueueMainActivity extends skQuery {
+export class skQueueMainActivity extends skQuery {
 
     constructor(...args) {
 
@@ -869,6 +867,12 @@ class skQueueMainActivity extends skQuery {
 
     }
 
+    fallback() {
+
+        // reinit
+        this.init();
+    }
+
     enqueue(fn) {
         if (!this.listeners.includes(fn)) this.listeners.push(fn);
         return null;
@@ -880,7 +884,7 @@ class skQueueMainActivity extends skQuery {
     }
 }
 
-class skBytes extends Object {
+export class skBytes extends Object {
 
     constructor () {
 
@@ -915,7 +919,14 @@ class skBytes extends Object {
 
         m = n / 2;
 
-        if (m != 1) {
+        if (m == .5) { // single
+
+            x = context.indexOf(contexts);
+            
+            if (-1 < x) return x;
+            return 0;
+        } else
+        if (!m%2) { // multi, double processing
 
             for (let i = 0; i < m; i++) {
 
@@ -929,7 +940,7 @@ class skBytes extends Object {
             return c;
         }
 
-        for (let i = 0; i < n; i++) {
+        for (let i = 0; i < n; i++) { // multi
             
             puts = contexts[i];
 
@@ -943,7 +954,7 @@ class skBytes extends Object {
     }
 }
 
-class skBufferText extends Object {
+export class skBufferText extends Object {
 
     constructor (...args) {
 
@@ -983,7 +994,7 @@ class skBufferText extends Object {
     }
 }
 
-class skStyleSheetSnippet extends CSSStyleSheet {
+export class skStyleSheetTrace extends CSSStyleSheet {
     
     constructor () {
         
@@ -993,7 +1004,7 @@ class skStyleSheetSnippet extends CSSStyleSheet {
 
 }
 
-class skStyleSheetHandler extends Object {
+export class skStyleSheetHandler extends Object {
 
     constructor () {
         super();
@@ -1071,7 +1082,7 @@ class skStyleSheetHandler extends Object {
         let style, styleSheet, selectorText;
         // render test
         // fake CSSStyleSheet
-        styleSheet = new skStyleSheetSnippet;
+        styleSheet = new skStyleSheetTrace;
         styleSheet?.insertRule(`${selector} \{ ${rule} \}`);
         style = Array.from(styleSheet?.cssRules).shift();
         selectorText = style?.selectorText;
@@ -1233,20 +1244,44 @@ class skStyleSheetHandler extends Object {
         return b;
     }
 
+    elementTraceStyle(et) {
+        if (et && ElementTrace.prototype.isPrototypeOf(et)) {
+
+            // attributes?.style to style
+            Object.defineProperty(et, "style", {
+                get: (function() {
+                    let style = et?.attributes?.style;
+                    if (style && typeof style == "string") return this.convertStyleLikeJs("none", style)[1];
+                    return null;
+                }).bind(this),
+                configurable: false,
+                enumerable: false
+            });
+
+            // todos
+            // style to attributes?.style
+            // object to string
+            // Object.getOwnPropertyNames
+        }
+        return null;
+    }
+
 }
 
-class skSurface extends skQuery {
+export class skSurface extends skQuery {
 
     constructor(...args) {
 
         super();
+
+        let q = new skQuery;
 
         this.target = q.parseQueries("!div[style=background-color: limegreen; width: 20vw; height: 20vw; margin: 0; padding: 0;]").target;
 
     }
 }
 
-class skSurfaceCircle extends skSurface {
+export class skSurfaceCircle extends skSurface {
 
     constructor(...args) {
 
@@ -1257,36 +1292,105 @@ class skSurfaceCircle extends skSurface {
     }
 }
 
-export default function $ (context) {
-    let q = new skQuery;
-    return  q.parseQueries.bind(q).apply(this || context, arguments);
-};
+export class skSurfaceTriangle extends skSurface {
 
-export function Q() {
+    constructor () {
 
-    let q = new skQuery;
+        super();
 
-    q.QueueMainActivity = new skQueueMainActivity;
-    q.Bytes = new skBytes;
-    q.StyleSheetHandler = new skStyleSheetHandler;
-    q.BufferText = new skBufferText;
+        this.data = new Object;
 
-    // customizable
-    q.Surface = skSurface;
-    q.SurfaceCircle = skSurfaceCircle;
+        this.data.w = this.target.style.width;
+        this.data.h = this.target.style.height;
+        this.data.bg = this.target.style.backgroundColor;
 
-    // call it with simple addiction
-    // q.Query = e => q.parseQueries.bind(q);
 
-    Object.defineProperty(q, "Query", {
-        get: function() {
-            return q.parseQueries.bind(q);
-        },
-        set: function(v) {}, // must be not writable, alternative
-        configurable: false,
-        enumerable: false
-        // writable: false,
-    })
+        this.target.style.backgroundColor = "";
+        this.target.style.borderStyle = "solid";
+        this.target.style.boxSizing = "border-box";
 
-    return q;
+        this.topArrow();
+
+
+    }
+
+    topArrow() {
+        let { w, h, bg } = this.data;
+        this.target.style.borderColor = `transparent transparent ${bg} transparent`;
+        this.target.style.borderWidth = `calc(${h} * 1/3) calc(${w}/2) calc(${h} * 2/3) calc(${w}/2)`;
+    }
+    
+    rightArrow() {
+        let { w, h, bg } = this.data;
+        this.target.style.borderColor = `transparent transparent transparent ${bg}`;
+        this.target.style.borderWidth = `calc(${h}/2) calc(${w} * 1/3) calc(${h}/2) calc(${w} * 2/3)`;
+    }
+    
+    bottomArrow() {
+        let { w, h, bg } = this.data;
+        this.target.style.borderColor = `${bg} transparent transparent transparent`;
+        this.target.style.borderWidth = `calc(${h} * 2/3) calc(${w}/2) calc(${h} * 1/3) calc(${w}/2)`;
+    }
+    
+    leftArrow() {
+        let { w, h, bg } = this.data;
+        this.target.style.borderColor = `transparent ${bg} transparent transparent`;
+        this.target.style.borderWidth = `calc(${h}/2) calc(${w} * 2/3) calc(${h}/2) calc(${w} * 1/3)`;
+    }
 }
+
+export class skQueryManager extends skQuery {
+
+    constructor() {
+
+        super();
+
+        this.QueueMainActivity = new skQueueMainActivity;
+        this.Bytes = new skBytes;
+        this.StyleSheetHandler = new skStyleSheetHandler;
+        this.BufferText = new skBufferText;
+    
+        // customizable
+        this.Surface = skSurface;
+        this.SurfaceTriangle = skSurfaceTriangle;
+        this.SurfaceCircle = skSurfaceCircle;
+    }
+
+    get Query() {
+
+        return this.parseQueries.bind(this);
+    }
+
+    set Query(value) {} // writable no - permission
+}
+
+// export default function $ (context) {
+//     let q = new skQuery;
+//     return  q.parseQueries.bind(q).apply(this || context, arguments);
+// };
+
+// export function Q() {
+
+//     let q = new skQuery;
+
+//     q.QueueMainActivity = new skQueueMainActivity;
+//     q.Bytes = new skBytes;
+//     q.StyleSheetHandler = new skStyleSheetHandler;
+//     q.BufferText = new skBufferText;
+
+//     q.Surface = skSurface;
+//     q.SurfaceTriangle = skSurfaceTriangle;
+//     q.SurfaceCircle = skSurfaceCircle;
+
+//     Object.defineProperty(q, "Query", {
+//         get: function() {
+//             return q.parseQueries.bind(q);
+//         },
+//         set: function(v) {}, // must be not writable, alternative
+//         configurable: false,
+//         enumerable: false
+
+//     })
+
+//     return q;
+// }

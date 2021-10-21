@@ -1,15 +1,24 @@
 // module: enable
 
-import { Q } from "./jessie.js";
+import { skQueryManager } from "./jessie.js";
 
-let q = Q();
+let q = new skQueryManager;
 let $ = q.Query;
+
+globalThis.q = q;
 
 // compare with ready function
 $(document).ready(function main() {
 
-    console.log(document.readyState);
-    alert(44);
+    // let s = new q.Surface;
+    // let t = new q.SurfaceTriangle;
+    // let o = new q.SurfaceCircle;
+
+    // console.log(document.readyState);
+    
+    // document.body.append(t.target);
+    // document.body.append(o.target);
+    // document.body.append(s.target);
 
 });
 
@@ -31,9 +40,8 @@ q.QueueMainActivity.enqueue(e => {
 
 q.QueueMainActivity.enqueue(e => {
 
-    alert(22);
     console.log(46);
 });
 
 // fallback
-q.QueueMainActivity.init();
+q.QueueMainActivity.fallback();
