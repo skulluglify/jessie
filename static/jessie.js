@@ -865,13 +865,23 @@ export class skBytes extends Object {
         i = 0;
         c = 0;
 
-        while (c <= m) {
-            c += 2 ** i;
-            i++;
-        }
+        // while (c <= m) {
+        //     c += 2 ** i;
+        //     i++;
+        // }
         
+        // m = m -1;
+        // i = i -1;
+
+        while (c <= m) {
+            
+            c += c * 2;
+            c = (c == 0 ? 1 : c);
+            i++
+        
+        }
+
         m = m -1;
-        i = i -1;
 
         let x;
         x = maxint;
