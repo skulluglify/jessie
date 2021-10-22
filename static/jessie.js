@@ -229,64 +229,6 @@ export class skQuery extends EventTarget {
         return contexts[0];
     }
 
-    hex(value) {
-        
-        let context, caches;
-        context = "0123456789abcdef";
-        caches = [];
-
-        if (value && typeof value == "string") {
-            for (let puts of value) {
-                caches.push(this.hex(puts.codePointAt()));
-            }
-            return caches;
-        }
-
-        if (typeof value != "number" || isNaN(value)) return "";
-
-        let i, maxint, b, c, d, n;
-
-        maxint = 256;
-        
-        i = 0;
-        b = 0;
-        c = 0;
-        d = 0;
-        n = 0;
-        
-        while (maxint < value) {
-            maxint += maxint;
-            i++;
-        }
-
-        if (i%2) {
-
-            n = maxint / 2;
-            b = n ** 0.5;
-            
-            while (d < b) {
-                d += 2 ** c;
-                c++;
-            }
-            
-            return this.hex(value >> ((c -1) * 2)) + this.hex(value & (n - 1));
-        
-        } else {
-            
-            b = maxint ** 0.5;
-            
-            while (d < b) {
-                d += 2 ** c;
-                c++;
-            }
-            
-            if (value > 255) return this.hex(value >> (c -1)) + this.hex(value & (b - 1));
-            
-            return context[value >> (c -1)] + context[value & (b - 1)];
-        
-        }
-    }
-
     urlSearchStringify(obj) {
         let context = "?";
         if (typeof obj == "object") {
@@ -893,65 +835,126 @@ export class skBytes extends Object {
 
     }
 
-    fromhex(contexts) {
+    encode(value, radix = 16) {
+        
+        let context, caches;
+        context = "0123456789abcdef";
+        caches = [];
+
+        if (value && typeof value == "object" && Array.isArray(value)) {
+
+            return value.map((v => this.encode(v, radix)[0]).bind(this));
+        }
+
+        if (value && typeof value == "string") {
+            for (let puts of value) {
+                caches.push(this.encode(puts.codePointAt(), radix));
+            }
+            return caches;
+        }
+
+        if (typeof value != "number" || isNaN(value)) return "";
+
+        let maxint, b;
+
+        maxint = radix;
+        b = 0;
+
+        let i, c, m;
+        m = maxint;
+        i = 0;
+        c = 0;
+
+        while (c <= m) {
+            c += 2 ** i;
+            i++;
+        }
+        
+        m = m -1;
+        i = i -1;
+
+        let x;
+        x = maxint;
+
+        while (x < value) {
+            x += x;
+        }
+
+        b = x / 2;
+
+        if (b > m) {
+
+            let j;
+            j = 1;
+    
+            while (true) {
+                if (b > (((m+1) ** j) -1)) return this.encode(value >> (i * j), radix) + this.encode(value & (((m+1) ** j) -1), radix) 
+            }
+        }
+        
+        // if (b > m) return this.encode(value >> i, radix) + this.encode(value & m, radix);
+
+        return context[value];
+    }
+
+    hex (value) {
+
+        return this.encode(value, 16);
+    }
+
+    oct (value) {
+
+        return this.encode(value, 8);
+    }
+
+    decode (contexts, radix = 16) {
 
         if (contexts && Array.isArray(contexts)) {
 
             return contexts.map((v => {
 
-                return String.fromCodePoint(this.fromhex(v));
+                return String.fromCodePoint(this.decode(v, radix));
             
             }).bind(this));
         }
 
         if (typeof contexts != "string" || !contexts) return 0;
 
-        let puts, c, context, m, n, x;
+        contexts = contexts.toLowerCase();
+
+        let puts, c, context, n, x;
 
         context = "0123456789abcdef";
         
         c = 0;
-        m = 0;
         n = 0;
         x = 0;
 
         n = contexts.length;
 
-        m = n / 2;
-
-        if (m == .5) { // single
-
-            x = context.indexOf(contexts);
-            
-            if (-1 < x) return x;
-            return 0;
-        } else
-        if (!m%2) { // multi, double processing
-
-            for (let i = 0; i < m; i++) {
-
-                // 0 1 2
-                // 0 2 4
-                // i * 2
-
-                c += (256 ** (m -1 -i)) * this.fromhex(contexts[i * 2] + contexts[(i * 2) +1]);
-            }
-
-            return c;
-        }
-
-        for (let i = 0; i < n; i++) { // multi
+        for (let i = 0; i < n; i++) {
             
             puts = contexts[i];
 
             x = context.indexOf(puts);
             
-            if (-1 < x) c += (16 ** (n -1 -i)) * x;
+            if (-1 < x) c += (radix ** (n -1 -i)) * x;
 
         }
 
         return c;
     }
+
+    fromhex (value) {
+
+        return this.decode(value, 16);
+    }
+
+    fromoct (value) {
+
+        return this.decode(value, 8);
+    }
+
 }
 
 export class skBufferText extends Object {
@@ -1300,18 +1303,23 @@ export class skSurfaceTriangle extends skSurface {
 
         this.data = new Object;
 
-        this.data.w = this.target.style.width;
-        this.data.h = this.target.style.height;
-        this.data.bg = this.target.style.backgroundColor;
-
-
-        this.target.style.backgroundColor = "";
-        this.target.style.borderStyle = "solid";
-        this.target.style.boxSizing = "border-box";
+        this.init();
 
         this.topArrow();
 
 
+    }
+
+    init() {
+
+        if (typeof this?.data != "object" || !this?.data) this.data = new Object;
+
+        this.data.w = this.target.style.width;
+        this.data.h = this.target.style.height;
+        this.data.bg = this.target.style.backgroundColor;
+        this.target.style.backgroundColor = "";
+        this.target.style.borderStyle = "solid";
+        this.target.style.boxSizing = "border-box";
     }
 
     topArrow() {
