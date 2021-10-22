@@ -32,11 +32,11 @@ export class DOMTokenListTrace extends Array {
 
     }
 
-    add(...tokens) {}
-    remove(...tokens) {}
-    contains(token) {}
-    entries() { arguments } // Array Iterator
-    get value() {}
+    add (...tokens) {}
+    remove (...tokens) {}
+    contains (token) {}
+    entries () { arguments } // Array Iterator
+    get value () {}
 }
 
 export class ElementTrace extends Object {
@@ -49,8 +49,8 @@ export class ElementTrace extends Object {
     
     }
 
-    setAttribute() {}
-    getAttribute() {}
+    setAttribute () {}
+    getAttribute () {}
 
 }
 
@@ -73,15 +73,15 @@ export class skQuery extends EventTarget {
         );
     }
 
-    isArray(obj) {
+    isArray (obj) {
         return !!(obj && typeof obj == "object" && (typeof obj?.length == "number") && (!"isArray" in Array ? Array.prototype.isPrototypeOf(obj) : Array.isArray(obj)));
     }
 
-    isRegex(obj) {
+    isRegex (obj) {
         return !!(obj && typeof obj == "object" && RegExp.prototype.isPrototypeOf(obj));
     }
 
-    onceCall(fn, context) {
+    onceCall (fn, context) {
         let returns;
         return function() {
             if (fn) {
@@ -92,7 +92,7 @@ export class skQuery extends EventTarget {
         }
     }
 
-    readyState(fn, context) {
+    readyState (fn, context) {
         let returns;
         return function() {
             if (fn && document.readyState == "complete") {
@@ -1257,24 +1257,60 @@ export class skStyleSheetHandler extends Object {
         return b;
     }
 
+    convertObjectStyleToDeclaration (obj) {
+
+        if (typeof obj != "object" && !obj) return "";
+
+        let caches, value, prop;
+        caches = "";
+        value = "";
+        prop = "";
+
+        let contexts, n;
+        contexts = Object.getOwnPropertyNames(obj);
+        n = contexts.length;
+
+        for (let i = 0; i < n; i++) {
+
+            prop = contexts[i];
+
+            value = obj[prop];
+            if (value && typeof value == "string") caches += `${prop.replace(/[A-Z]/g, e => "\-" + e.toLowerCase())}: ${value};${i+1 == n ? "" : " "}`
+        }
+
+        return caches;
+    }
+
     elementTraceStyle(et) {
         if (et && ElementTrace.prototype.isPrototypeOf(et)) {
 
             // attributes?.style to style
-            Object.defineProperty(et, "style", {
-                get: (function() {
-                    let style = et?.attributes?.style;
-                    if (style && typeof style == "string") return this.convertStyleLikeJs("none", style)[1];
-                    return null;
-                }).bind(this),
-                configurable: false,
-                enumerable: false
-            });
-
+            // Object.defineProperty(et, "style", {
+            //     get: (function() {
+            //         let style = et?.attributes?.style;
+            //         if (style && typeof style == "string") return this.convertStyleLikeJs("none", style)[1];
+            //         return null;
+            //     }).bind(this),
+            //     configurable: false,
+            //     enumerable: false
+            // });
+            
             // todos
             // style to attributes?.style
             // object to string
             // Object.getOwnPropertyNames
+
+            let style = et?.attributes?.style;
+            if (style) {
+                et.style = this.convertStyleLikeJs("none", style)[1];
+                Object.defineProperty(et.attributes, "style", {
+                    get: (function() {
+                        return this.convertObjectStyleToDeclaration(et?.style);
+                    }).bind(this),
+                    configurable: true,
+                    enumerable: true
+                })
+            }
         }
         return null;
     }
