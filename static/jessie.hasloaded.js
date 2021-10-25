@@ -1,8 +1,10 @@
 // module: enable
 
 import { skQueryManager } from "./jessie.js";
+import { Render } from "./jessie.render.js";
 
 let q = new skQueryManager;
+let r = new Render;
 let $ = q.Query;
 
 globalThis.q = q;
@@ -20,28 +22,32 @@ $(document).ready(function main() {
     // document.body.append(o.target);
     // document.body.append(s.target);
 
+    (async function() {
+
+        console.log(r.eval(await fetch("example.jessie").then(e => e.text())));
+    })()
 });
 
-// compare with QueueMainActivity 
-q.QueueMainActivity.enqueue(e => {
+// // compare with QueueMainActivity 
+// q.QueueMainActivity.enqueue(e => {
 
-    console.log(43);
-});
+//     console.log(43);
+// });
 
-q.QueueMainActivity.enqueue(e => {
+// q.QueueMainActivity.enqueue(e => {
 
-    console.log(44);
-});
+//     console.log(44);
+// });
 
-q.QueueMainActivity.enqueue(e => {
+// q.QueueMainActivity.enqueue(e => {
 
-    console.log(45);
-});
+//     console.log(45);
+// });
 
-q.QueueMainActivity.enqueue(e => {
+// q.QueueMainActivity.enqueue(e => {
 
-    console.log(46);
-});
+//     console.log(46);
+// });
 
-// fallback
-q.QueueMainActivity.fallback();
+// // fallback
+// q.QueueMainActivity.fallback();

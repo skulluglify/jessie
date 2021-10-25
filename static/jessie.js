@@ -278,17 +278,36 @@ export class skQuery extends EventTarget {
                         caches += "\#" + context?.id;
                     };
                     if (context?.classList) {
-                        element.classList.add(...context?.classList);
-                        context?.classList?.forEach(c => {
-                            caches += "\." + c;
-                        });
+                        if (context?.classList?.length > 0) {
+                            element.classList.add(...context?.classList);
+                            context?.classList?.forEach(c => {
+                                caches += "\." + c;
+                            });
+                        }
                     };
                     if (context?.attributes) {
                         for (let attr in context?.attributes) {
                             element.setAttribute(attr, context?.attributes[attr]);
                         }
-                    }
-
+                    };
+                    if (context?.content) {
+                        element.textContent = context?.content;
+                    };
+                    if (context?.textContent) {
+                        element.textContent = context?.textContent;
+                    };
+                    if (context?.text) {
+                        element.innerText = context?.text;
+                    };
+                    if (context?.innerText) {
+                        element.innerText = context?.innerText;
+                    };
+                    if (context?.html) {
+                        element.innerHTML = context?.html;
+                    };
+                    if (context?.innerHTML) {
+                        element.innerHTML = context?.innerHTML;
+                    };
                     context = caches;
                     caches = "";
 

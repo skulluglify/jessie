@@ -1,0 +1,29 @@
+div[style=background-color: skyblue; width: 180px; height: 180px;]#container    
+
+
+    span[text="hallo"]   
+
+    div 
+        pre
+
+
+    textarea
+
+    [[
+
+        alert(`
+        
+            hallo world
+        `)
+    ]]
+
+div[style=background-color: skyblue; width: 180px; height: 180px;]#container    
+
+
+    span.small.union << [%`
+    
+    HALLO <br \\>
+    WORLD <br \\>
+    !
+    
+    `%]   
