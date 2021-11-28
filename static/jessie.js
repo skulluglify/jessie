@@ -4,59 +4,59 @@
 
 export class skQueryEvent extends Event {
 
-    constructor () {
+    constructor() {
 
         super("Query");
 
         this.detail = new Object;
-        
+
     }
 }
 
 export class skQueryReadyEvent extends Event {
 
-    constructor () {
+    constructor() {
 
         super("QueryReady");
 
         this.detail = new Object;
-        
+
     }
 }
 
 export class DOMTokenListTrace extends Array {
 
-    constructor () {
+    constructor() {
 
         super();
 
     }
 
-    add (...tokens) {}
-    remove (...tokens) {}
-    contains (token) {}
-    entries () { arguments } // Array Iterator
-    get value () {}
+    add(...tokens) { }
+    remove(...tokens) { }
+    contains(token) { }
+    entries() { arguments } // Array Iterator
+    get value() { }
 }
 
 export class ElementTrace extends Object {
-    
-    constructor () {
-        
+
+    constructor() {
+
         super();
 
         this.classList = new DOMTokenListTrace;
-    
+
     }
 
-    setAttribute () {}
-    getAttribute () {}
+    setAttribute() { }
+    getAttribute() { }
 
 }
 
 export class skQuery extends EventTarget {
 
-    constructor (target = null) {
+    constructor(target = null) {
 
         super();
 
@@ -73,17 +73,17 @@ export class skQuery extends EventTarget {
         );
     }
 
-    isArray (obj) {
+    isArray(obj) {
         return !!(obj && typeof obj == "object" && (typeof obj?.length == "number") && (!"isArray" in Array ? Array.prototype.isPrototypeOf(obj) : Array.isArray(obj)));
     }
 
-    isRegex (obj) {
+    isRegex(obj) {
         return !!(obj && typeof obj == "object" && RegExp.prototype.isPrototypeOf(obj));
     }
 
-    onceCall (fn, context) {
+    onceCall(fn, context) {
         let returns;
-        return function() {
+        return function () {
             if (fn) {
                 returns = fn.apply(this || context, arguments);
                 fn = null;
@@ -92,9 +92,9 @@ export class skQuery extends EventTarget {
         }
     }
 
-    readyState (fn, context) {
+    readyState(fn, context) {
         let returns;
-        return function() {
+        return function () {
             if (fn && document.readyState == "complete") {
                 returns = fn.apply(this || context, arguments);
                 fn = null;
@@ -103,8 +103,8 @@ export class skQuery extends EventTarget {
         }
     }
 
-    unSpaceText (context) {
-        
+    unSpaceText(context) {
+
         let puts, caches, n, start;
         n = context?.length || 0;
         start = false;
@@ -121,10 +121,10 @@ export class skQuery extends EventTarget {
         start = false;
         context = "";
 
-        if (caches[n -1] != " ") return caches;
+        if (caches[n - 1] != " ") return caches;
 
         for (let i = 0; i < n; i++) {
-            puts = caches[n -1 -i];
+            puts = caches[n - 1 - i];
             if (puts == " " && !start) continue;
             context = puts + context;
             start = true;
@@ -136,7 +136,7 @@ export class skQuery extends EventTarget {
     // ex: q.unQuote("name=\"ahmad asy syafiq\"&class=\"devil\"", [ /\&/i, "=" ])
     unQuote(context, options = null, separate = !1, keepquotes = !1) {
         let caches, contexts, end, isregex, quotes, slashkeys, cacheQueue;
- 
+
         caches = "";
         contexts = new Array;
         end = "";
@@ -184,47 +184,47 @@ export class skQuery extends EventTarget {
                 slashkeys = !1;
                 continue;
             };
-            
-            
+
+
             if (puts == "\\") {
                 slashkeys = !0;
                 if (!keepquotes) continue;
             }
-            
+
             if (quotes.length < 2) {
-                
+
                 if ("\'\"".includes(puts) && (quotes.length > 0 ? quotes[0] == puts : true) && !slashkeys) {
                     if (keepquotes) caches += puts;
                     quotes += puts;
                     continue;
                 }
-            
+
             } else {
-                
+
                 if (caches.length > 0) contexts.push(caches);
                 caches = "";
                 quotes = "";
-                
+
             }
 
-            
+
             if (quotes.length == 0) {
                 if (separate && (!isregex ? options == puts : options.test(puts))) {
-                    
+
                     if (caches.length > 0) contexts.push(caches);
                     caches = "";
-                    
+
                     continue;
-                    
+
                 }
             }
-            
+
             caches += puts;
         }
 
-        
+
         if (caches.length > 0) contexts.push(caches);
- 
+
         if (separate) return contexts;
         return contexts[0];
     }
@@ -236,10 +236,10 @@ export class skQuery extends EventTarget {
                 context += `${key}=${obj[key]}&`;
             }
         }
-        return context.slice(0, context.length -1).replaceAll(" ", "+");
+        return context.slice(0, context.length - 1).replaceAll(" ", "+");
     }
 
-    parseUrlSearch (urls) {
+    parseUrlSearch(urls) {
         let obj = new Object
         if (urls.startsWith("?")) urls = urls.slice(1, urls.length);
         this.unQuote(urls.replaceAll("+", " "), [/&/i, "="], true).map(e => {
@@ -252,10 +252,10 @@ export class skQuery extends EventTarget {
     }
 
     // ex: let [ elementTrace, context ] = q.createQuery("div[style=background-color: limegreen; width: 20%; height: 20%; margin: 4%;]#test.smallGroup.union", false);
-    createQuery (context, create = true) {
+    createQuery(context, create = true) {
 
         let attrs, brackets, caches, element, idString, idSession, classlist, classSessions, classCaches, cacheAttrs, obj;
- 
+
         attrs = new Array;
         brackets = "";
         caches = "";
@@ -276,7 +276,7 @@ export class skQuery extends EventTarget {
                     if (context?.id) {
                         element.setAttribute("id", context?.id);
                         caches += "\#" + context?.id;
-                    };
+                    }
                     if (context?.classList) {
                         if (context?.classList?.length > 0) {
                             element.classList.add(...context?.classList);
@@ -284,30 +284,54 @@ export class skQuery extends EventTarget {
                                 caches += "\." + c;
                             });
                         }
-                    };
+                    }
                     if (context?.attributes) {
                         for (let attr in context?.attributes) {
                             element.setAttribute(attr, context?.attributes[attr]);
                         }
-                    };
-                    if (context?.content) {
-                        element.textContent = context?.content;
-                    };
-                    if (context?.textContent) {
-                        element.textContent = context?.textContent;
-                    };
-                    if (context?.text) {
-                        element.innerText = context?.text;
-                    };
-                    if (context?.innerText) {
-                        element.innerText = context?.innerText;
-                    };
-                    if (context?.html) {
-                        element.innerHTML = context?.html;
-                    };
-                    if (context?.innerHTML) {
-                        element.innerHTML = context?.innerHTML;
-                    };
+                    }
+                    if (context?.content) element.textContent = context?.content;
+                    if (context?.textContent) element.textContent = context?.textContent;
+                    if (context?.text) element.innerText = context?.text;
+                    if (context?.innerText) element.innerText = context?.innerText;
+                    if (context?.html) element.innerHTML = context?.html;
+                    if (context?.innerHTML) element.innerHTML = context?.innerHTML;
+                    if (context?.cstyle) {
+
+                        let specify = !1;
+
+                        switch (context?.specify || "no") {
+
+                            case "yes":
+                                specify = !0;
+                                break;
+                            
+                            case "no":
+                                specify = !1;
+                                break;
+                        }
+
+                        let selector = context?.nodeName?.toLowerCase() || "";
+
+                        if (specify) {
+                            if (context?.id) {
+                                selector += `\#${context?.id}`;
+                            }
+                        }
+
+                        if (context?.classList) {
+                            if (context?.classList?.length > 0) {
+                                for (let cls of context?.classList) {
+                                    selector += `\.${cls}`;
+                                }
+                            }
+                        }
+
+                        if (context?.cstyle?.length > 0) {
+                            let styleSheetHandler = new skStyleSheetHandler;
+                            styleSheetHandler.setAttribute(selector, context?.cstyle);
+                        }
+                    }
                     context = caches;
                     caches = "";
 
@@ -315,7 +339,7 @@ export class skQuery extends EventTarget {
                     return context;
                 }
             }
-            return [ new ElementTrace, new String ];
+            return [new ElementTrace, new String];
         }
 
         function classlist_push() {
@@ -328,7 +352,7 @@ export class skQuery extends EventTarget {
 
         function attrs_push() {
             if (cacheAttrs.length > 0) {
-                attrs = this.unQuote(cacheAttrs, [ /\&|\,/i, "=" ])
+                attrs = this.unQuote(cacheAttrs, [/\&|\,/i, "="])
                 cacheAttrs = "";
             }
         }
@@ -353,7 +377,7 @@ export class skQuery extends EventTarget {
                 }
 
             } else {
-                
+
                 attrs_push();
                 brackets = "";
             }
@@ -366,7 +390,7 @@ export class skQuery extends EventTarget {
                 continue;
             }
 
-            
+
             if (puts == "\.") {
                 classlist_push();
                 classSessions = true;
@@ -383,7 +407,7 @@ export class skQuery extends EventTarget {
                 classCaches += puts;
                 continue;
             }
-            
+
             caches += puts;
         }
 
@@ -393,7 +417,7 @@ export class skQuery extends EventTarget {
         context = caches;
         caches = "";
 
-        if (!(context.length > 0)) return [ new ElementTrace, new String ]; 
+        if (!(context.length > 0)) return [new ElementTrace, new String];
 
         obj["nodeName"] = context.toUpperCase();
         if (create) element = document.createElement(context);
@@ -424,15 +448,15 @@ export class skQuery extends EventTarget {
                 }
             }
         }
- 
-        if (create) return [ element, context ]
-        return [ obj, context ];
+
+        if (create) return [element, context]
+        return [obj, context];
     }
 
-    parseQueries (queries) {
+    parseQueries(queries) {
 
         const target = this.target || document;
-        const skQueryClone = this.constructor.bind(this); 
+        const skQueryClone = this.constructor.bind(this);
         const isarray = this.isArray(target);
 
         if (target) {
@@ -445,32 +469,32 @@ export class skQuery extends EventTarget {
                 if (queries.startsWith("!")) {
 
                     queries = queries.slice(1);
-                    
+
                     return new skQueryClone(this.createQuery(queries)[0]);
 
                 } else
-                if (queries.endsWith("*")) {
+                    if (queries.endsWith("*")) {
 
-                    queries = queries.slice(0, queries.length -1);
+                        queries = queries.slice(0, queries.length - 1);
 
-                    let almost_an_element = this.createQuery(queries, false);
-                    let elements = target.querySelectorAll(almost_an_element[1]);
+                        let almost_an_element = this.createQuery(queries, false);
+                        let elements = target.querySelectorAll(almost_an_element[1]);
 
-                    if (elements) return new skQueryClone(Array.from(elements)
-                    .map(t => new skQueryClone(t?.target || t)));
-                    return new skQueryClone;
+                        if (elements) return new skQueryClone(Array.from(elements)
+                            .map(t => new skQueryClone(t?.target || t)));
+                        return new skQueryClone;
 
-                } else {
+                    } else {
 
-                    let almost_an_element = this.createQuery(queries, false);
-                    let element = target.querySelector(almost_an_element[1]);
+                        let almost_an_element = this.createQuery(queries, false);
+                        let element = target.querySelector(almost_an_element[1]);
 
-                    if (!element) return new skQueryClone(this.createQuery(almost_an_element[0])[0]);
-                    return new skQueryClone(element);
-                }
-                
-                // break; useless
-            
+                        if (!element) return new skQueryClone(this.createQuery(almost_an_element[0])[0]);
+                        return new skQueryClone(element);
+                    }
+
+            // break; useless
+
             case "object":
 
                 if (skQueryClone.prototype.isPrototypeOf(queries)) queries = queries?.target || queries;
@@ -479,18 +503,18 @@ export class skQuery extends EventTarget {
 
                     return new skQueryClone(queries.map(q => this.parseQueries(q)));
                 } else
-                if (Element.prototype.isPrototypeOf(queries) || 
-                    Document.prototype.isPrototypeOf(queries) || 
-                    DocumentFragment.prototype.isPrototypeOf(queries) || 
-                    Window.prototype.isPrototypeOf(queries)) {
+                    if (Element.prototype.isPrototypeOf(queries) ||
+                        Document.prototype.isPrototypeOf(queries) ||
+                        DocumentFragment.prototype.isPrototypeOf(queries) ||
+                        Window.prototype.isPrototypeOf(queries)) {
 
-                    return new skQueryClone(queries);
-                }
-                
+                        return new skQueryClone(queries);
+                    }
+
                 break;
 
         }
-        
+
         return null;
     }
 
@@ -514,7 +538,7 @@ export class skQuery extends EventTarget {
     }
 
     class(...cls) {
-        
+
         const target = this.target || document?.body;
         const skQueryClone = this.constructor.bind(this);
         const isarray = this.isArray(target);
@@ -529,7 +553,7 @@ export class skQuery extends EventTarget {
         }
         return target?.classList;
     }
-    
+
     classRemove(...cls) {
 
         const target = this.target || document?.body;
@@ -539,7 +563,7 @@ export class skQuery extends EventTarget {
         if (cls.length > 0) {
             if (target) {
                 if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).classRemove(...cls));
-                cls.forEach((c => {    
+                cls.forEach((c => {
                     if (target?.classList?.contains(c)) target?.classList?.remove(c);
                 }).bind(this));
             }
@@ -547,8 +571,8 @@ export class skQuery extends EventTarget {
         return target?.classList;
     }
 
-    ignoreTransformStyle (transforms, ignore) {
-        
+    ignoreTransformStyle(transforms, ignore) {
+
         let caches, isarray, isregex;
         caches = "";
         isregex = this.isRegex(ignore);
@@ -564,13 +588,13 @@ export class skQuery extends EventTarget {
 
         if (transforms && typeof transforms == "string") this.unQuote(transforms, "\)", !0, !0).forEach((transform => {
             let test, continues;
-            
+
             test = "";
             continues = false;
 
             for (let puts of transform) {
                 if (puts == "\(") break;
-                if (puts == " ") continue; 
+                if (puts == " ") continue;
                 test += puts;
             }
             if (!isarray) {
@@ -601,9 +625,9 @@ export class skQuery extends EventTarget {
         const transforms = this.ignoreTransformStyle(target?.style?.transform || "", "rotate");
         const isarray = this.isArray(target);
 
-        if(target) {
+        if (target) {
             if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).rotate(degrees));
-            if ("style" in target) target.style.transform = `rotate(${degrees})${transforms? " " + transforms : ''}`;
+            if ("style" in target) target.style.transform = `rotate(${degrees})${transforms ? " " + transforms : ''}`;
         }
 
         return transforms;
@@ -611,7 +635,7 @@ export class skQuery extends EventTarget {
 
     scale(w, h) {
 
-        if (typeof w == "string") w = parseInt(w); 
+        if (typeof w == "string") w = parseInt(w);
         if (typeof h == "string") h = parseInt(h);
 
         const target = this.target || document?.body;
@@ -619,9 +643,9 @@ export class skQuery extends EventTarget {
         const transforms = this.ignoreTransformStyle(target?.style?.transform || "", "scale");
         const isarray = this.isArray(target);
 
-        if(target) {
+        if (target) {
             if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).scale(w, h));
-            if ("style" in target) target.style.transform = `scale(${w}, ${h})${transforms? " " + transforms : ''}`;
+            if ("style" in target) target.style.transform = `scale(${w}, ${h})${transforms ? " " + transforms : ''}`;
         }
 
         return transforms;
@@ -635,10 +659,10 @@ export class skQuery extends EventTarget {
         const target = this.target || document?.body;
         const skQueryClone = this.constructor.bind(this);
         // const transforms = this.ignoreTransformStyle(target?.style?.transform || "", [ "translate", "translateX", "translateY" ]);
-        const transforms = this.ignoreTransformStyle(target?.style?.transform || "", [ "translateX", "translateY" ]);
+        const transforms = this.ignoreTransformStyle(target?.style?.transform || "", ["translateX", "translateY"]);
         const isarray = this.isArray(target);
 
-        if(target) {
+        if (target) {
             if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).translate(x, y));
             // if ("style" in target) target.style.transform = `translate(${x}, ${y})${transforms? " " + transforms : ''}`;
             this.translateX(x);
@@ -658,9 +682,9 @@ export class skQuery extends EventTarget {
         const transforms = this.ignoreTransformStyle(target?.style?.transform || "", "translateX");
         const isarray = this.isArray(target);
 
-        if(target) {
+        if (target) {
             if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).translateX(x));
-            if ("style" in target) target.style.transform = `translateX(${x})${transforms? " " + transforms : ''}`;
+            if ("style" in target) target.style.transform = `translateX(${x})${transforms ? " " + transforms : ''}`;
         }
 
         return transforms;
@@ -676,23 +700,23 @@ export class skQuery extends EventTarget {
         const transforms = this.ignoreTransformStyle(target?.style?.transform || "", "translateY");
         const isarray = this.isArray(target);
 
-        if(target) {
+        if (target) {
             if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).translateY(y));
-            if ("style" in target) target.style.transform = `translateY(${y})${transforms? " " + transforms : ''}`;
+            if ("style" in target) target.style.transform = `translateY(${y})${transforms ? " " + transforms : ''}`;
         }
 
         return transforms;
     }
 
-    borderRadius (value) {
-        
+    borderRadius(value) {
+
         if (typeof value == "number") value = `${value}px`;
-        
+
         const target = this.target || document?.body;
         const skQueryClone = this.constructor.bind(this);
         const isarray = this.isArray(target);
 
-        if(target) {
+        if (target) {
             if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).borderRadius(value));
             if ("style" in target) {
 
@@ -712,17 +736,17 @@ export class skQuery extends EventTarget {
         return this.borderRadius("50\%");
     }
 
-    hide () {
+    hide() {
 
         const target = this.target || document?.body;
         const skQueryClone = this.constructor.bind(this);
         const display = target?.style?.display || "";
         const isarray = this.isArray(target);
 
-        if(target) {
-            
+        if (target) {
+
             if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).hide());
-            
+
             // save current display style
             target.__style_display__ = display;
             if ("style" in target) target.style.display = "none";
@@ -731,14 +755,14 @@ export class skQuery extends EventTarget {
         return target?.style?.display || display;
     }
 
-    show () {
+    show() {
 
         const target = this.target || document?.body;
         const skQueryClone = this.constructor.bind(this);
         const display = target?.style?.display || "";
         const isarray = this.isArray(target);
 
-        if(target) {
+        if (target) {
             if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).show());
             if ("style" in target) target.style.display = target?.__style_display__ || "block";
         }
@@ -746,16 +770,16 @@ export class skQuery extends EventTarget {
         return target?.style?.display || display;
     }
 
-    on (type, listener, options = true) {
+    on(type, listener, options = true) {
 
         const target = this.target || document?.body;
         const skQueryClone = this.constructor.bind(this);
         const isarray = this.isArray(target);
 
-        if(target && type && typeof type == "string") {
+        if (target && type && typeof type == "string") {
 
             if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).on(type, listener, options));
-            
+
             let listen = false;
             // save current listeners
             if (!(this.isArray(target?.__listeners__))) target.__listeners__ = new Array;
@@ -763,32 +787,32 @@ export class skQuery extends EventTarget {
                 target.__listeners__.push(listener);
                 listen = true;
             }
-            
-            if (typeof listener == "function" && listen) target.addEventListener(type, listener, options) 
+
+            if (typeof listener == "function" && listen) target.addEventListener(type, listener, options)
 
         }
 
         return options;
     }
 
-    removeEvent (type, listener, options) {
+    removeEvent(type, listener, options) {
 
         const target = this.target || document?.body;
         const skQueryClone = this.constructor.bind(this);
         const isarray = this.isArray(target);
 
-        if(target && type && typeof type == "string") {
+        if (target && type && typeof type == "string") {
 
             if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).removeEvent(type, listener, options));
-            
+
             let listen = true;
             // save current listeners
             if (this.isArray(target?.__listeners__) && target?.__listeners__.includes(listener)) {
                 target.__listeners__.splice(target.__listeners__.indexOf(listener), 1);
                 listen = false;
             }
-            
-            if (typeof listener == "function" && !listen) target.removeEventListener(type, listener, options) 
+
+            if (typeof listener == "function" && !listen) target.removeEventListener(type, listener, options)
 
         }
 
@@ -847,7 +871,7 @@ export class skQueueMainActivity extends skQuery {
 
 export class skBytes extends Object {
 
-    constructor () {
+    constructor() {
 
         super();
 
@@ -855,7 +879,9 @@ export class skBytes extends Object {
     }
 
     encode(value, radix = 16) {
-        
+
+        if (value?.toString && value?.toString?.length > 0) return value.toString(radix);
+
         let context, caches;
         context = "0123456789abcdef";
         caches = [];
@@ -888,19 +914,19 @@ export class skBytes extends Object {
         //     c += 2 ** i;
         //     i++;
         // }
-        
+
         // m = m -1;
         // i = i -1;
 
         while (c <= m) {
-            
+
             c += c * 2;
             c = (c == 0 ? 1 : c);
             i++
-        
+
         }
 
-        m = m -1;
+        m = m - 1;
 
         let x;
         x = maxint;
@@ -915,35 +941,37 @@ export class skBytes extends Object {
 
             let j;
             j = 1;
-    
+
             while (true) {
-                if (b > (((m+1) ** j) -1)) return this.encode(value >> (i * j), radix) + this.encode(value & (((m+1) ** j) -1), radix) 
+                if (b > (((m + 1) ** j) - 1)) return this.encode(value >> (i * j), radix) + this.encode(value & (((m + 1) ** j) - 1), radix)
             }
         }
-        
+
         // if (b > m) return this.encode(value >> i, radix) + this.encode(value & m, radix);
 
         return context[value];
     }
 
-    hex (value) {
+    hex(value) {
 
         return this.encode(value, 16);
     }
 
-    oct (value) {
+    oct(value) {
 
         return this.encode(value, 8);
     }
 
-    decode (contexts, radix = 16) {
+    decode(contexts, radix = 16) {
+
+        if (globalThis?.parseInt && globalThis?.parseInt?.length > 1) return parseInt(contexts, radix);
 
         if (contexts && Array.isArray(contexts)) {
 
             return contexts.map((v => {
 
                 return String.fromCodePoint(this.decode(v, radix));
-            
+
             }).bind(this));
         }
 
@@ -954,7 +982,7 @@ export class skBytes extends Object {
         let puts, c, context, n, x;
 
         context = "0123456789abcdef";
-        
+
         c = 0;
         n = 0;
         x = 0;
@@ -962,24 +990,24 @@ export class skBytes extends Object {
         n = contexts.length;
 
         for (let i = 0; i < n; i++) {
-            
+
             puts = contexts[i];
 
             x = context.indexOf(puts);
-            
-            if (-1 < x) c += (radix ** (n -1 -i)) * x;
+
+            if (-1 < x) c += (radix ** (n - 1 - i)) * x;
 
         }
 
         return c;
     }
 
-    fromhex (value) {
+    fromhex(value) {
 
         return this.decode(value, 16);
     }
 
-    fromoct (value) {
+    fromoct(value) {
 
         return this.decode(value, 8);
     }
@@ -988,57 +1016,58 @@ export class skBytes extends Object {
 
 export class skBufferText extends Object {
 
-    constructor (...args) {
+    constructor(...args) {
 
         super();
 
+        // this.buffer = null;
         this.buffer = new Uint8Array;
 
     }
 
-    encode(context, unicode = true) {
+    encode(context, unicode = true, caches = false) {
+
+        let buffer;
+        buffer = new Uint8Array;
 
         if (typeof context != "string" || !context) return null;
 
-        if (unicode) this.buffer = new Uint32Array(Array.from(context).map(e => e.codePointAt()));
-        else this.buffer = new Uint8Array(Array.from(context).map(e => e.codePointAt()));
-        if (unicode) this.buffer = new Uint8Array(this.buffer?.buffer || this.buffer);
+        if (unicode) buffer = new Uint32Array(Array.from(context).map(e => e.codePointAt()));
+        else buffer = new Uint8Array(Array.from(context).map(e => e.codePointAt()));
+        if (unicode) buffer = new Uint8Array(buffer?.buffer || buffer);
 
-        return this.buffer;
+        if (caches) this.buffer = buffer;
+
+        return buffer;
     }
 
     decode(buffer = null, unicode = true) {
 
-        let returns;
-        returns = null;
+        if (!buffer) buffer = this.buffer;
 
-        if (buffer) this.buffer = buffer;
+        if (!buffer || buffer?.length == 0 || !Uint8Array.prototype.isPrototypeOf(buffer)) return new Array;
 
-        if (!this.buffer || this.buffer?.length == 0 || !Uint8Array.prototype.isPrototypeOf(this.buffer)) return new Array;
+        if (unicode) buffer = new Uint32Array(buffer?.buffer || buffer);
 
-        if (unicode) this.buffer = new Uint32Array(this.buffer?.buffer || this.buffer);
-        
-        returns = Array.from(this.buffer).map(e => String.fromCodePoint(e));
-        
-        this.buffer = null;
+        if (!buffer) this.buffer = new Uint8Array;
 
-        return returns;
+        return Array.from(buffer).map(e => String.fromCodePoint(e));
     }
 }
 
 export class skStyleSheetTrace extends CSSStyleSheet {
-    
-    constructor () {
-        
+
+    constructor() {
+
         super();
-    
+
     }
 
 }
 
 export class skStyleSheetHandler extends Object {
 
-    constructor () {
+    constructor() {
         super();
 
         this.styleSheets = null;
@@ -1047,7 +1076,7 @@ export class skStyleSheetHandler extends Object {
         this.init();
 
     }
-    
+
     init() {
         if (Array.from(document?.head?.children).filter(elem => elem?.nodeName == "STYLE").length == 0) {
             let style = document.createElement("style");
@@ -1059,7 +1088,7 @@ export class skStyleSheetHandler extends Object {
         }
 
         this.styleSheets = Array.from(document.styleSheets);
-        
+
         // fault tolerance
         // if (this.styleSheets.length == 0) this.styleSheets = [
         //     new class CSS extends CSSStyleSheet {
@@ -1068,11 +1097,11 @@ export class skStyleSheetHandler extends Object {
         //         }
         //     }
         // ];
-        
+
         return null;
     }
 
-    convertArrayToObject (array) {
+    convertArrayToObject(array) {
         let obj;
         obj = new Object;
         array.forEach(attr => {
@@ -1080,13 +1109,13 @@ export class skStyleSheetHandler extends Object {
                 if (attr?.length > 1) obj[attr[0]] = attr[1];
                 else if (attr?.length > 0) obj[attr[0]] = null;
             } else
-            if (attr && typeof attr == "string") obj[attr] = null;
+                if (attr && typeof attr == "string") obj[attr] = null;
         });
         return obj;
     }
 
-    convertStyleAttrLikeJs (attr) {
-        
+    convertStyleAttrLikeJs(attr) {
+
         if (attr && Array.isArray(attr)) return attr.map((attribute => {
             return this.convertStyleAttrLikeJs(attribute);
         }).bind(this));
@@ -1110,7 +1139,7 @@ export class skStyleSheetHandler extends Object {
     }
 
     convertStyleLikeJs(selector, rule) {
-        
+
         let style, styleSheet, selectorText;
         // render test
         // fake CSSStyleSheet
@@ -1119,57 +1148,57 @@ export class skStyleSheetHandler extends Object {
         style = Array.from(styleSheet?.cssRules).shift();
         selectorText = style?.selectorText;
         style = style.style;
-        style = Array.from(style).map((attr => [ this.convertStyleAttrLikeJs(attr), style[attr] ]).bind(this))
+        style = Array.from(style).map((attr => [this.convertStyleAttrLikeJs(attr), style[attr]]).bind(this))
         // compare
         // return
-        return [ selectorText, this.convertArrayToObject(style) ];
+        return [selectorText, this.convertArrayToObject(style)];
     }
 
     getAllStyleSheets() {
 
         return Array.from(this.styleSheets).map((styleSheet => {
-            
+
             let selectorText;
             // let style, selectorText;
             // style = Array.from(styleSheet?.cssRules).shift();
-            
+
             return Array.from(styleSheet?.cssRules).map((style => {
                 selectorText = style?.selectorText;
                 style = style.style;
-                style = Array.from(style).map((attr => [ this.convertStyleAttrLikeJs(attr), style[attr] ]).bind(this))
-                return [ selectorText, this.convertArrayToObject(style) ];
+                style = Array.from(style).map((attr => [this.convertStyleAttrLikeJs(attr), style[attr]]).bind(this))
+                return [selectorText, this.convertArrayToObject(style)];
             }).bind(this));
 
         }).bind(this));
     }
-    
+
     // ex: q.styleSheetHandler.contains(".circle", "border-radius: 50%; margin: 12px;");
     contains(selector, rule) {
-        
+
         let a, b, c;
 
         c = false;
 
         if (!(this.styleSheets && Array.isArray(this.styleSheets))) return false;
         if (this.styleSheets?.length == 0 || this.styleSheets[0]?.cssRules?.length == 0) return false;
-        
+
         a = this.convertStyleLikeJs(selector, rule);
         b = this.getAllStyleSheets();
 
         for (let rules of b) {
 
-            for(let compare of rules) {
+            for (let compare of rules) {
 
                 if (!(compare && Array.isArray(compare) && compare.length > 1)) return false;
                 if (compare[0] != a[0]) {
                     c = true;
                     continue;
                 }
-                
+
                 let value;
                 c = false;
                 value = "";
-    
+
                 // from a to compare
                 for (let attr in a[1]) {
                     value = a[1][attr];
@@ -1200,10 +1229,10 @@ export class skStyleSheetHandler extends Object {
                     }
                 }
 
-                if(!c) break;
+                if (!c) break;
             }
 
-            if(!c) break;
+            if (!c) break;
         }
 
         return !c;
@@ -1234,15 +1263,15 @@ export class skStyleSheetHandler extends Object {
         let a, b;
 
         a = this.getAllStyleSheets();
-        
+
         b = new Array;
 
         for (let rules of a) {
 
-            for(let compare of rules) {
+            for (let compare of rules) {
 
                 if (!(compare && Array.isArray(compare) && compare.length > 1)) return null;
-                
+
                 let caches;
                 caches = "";
 
@@ -1276,7 +1305,7 @@ export class skStyleSheetHandler extends Object {
         return b;
     }
 
-    convertObjectStyleToDeclaration (obj) {
+    convertObjectStyleToDeclaration(obj) {
 
         if (typeof obj != "object" && !obj) return "";
 
@@ -1294,7 +1323,7 @@ export class skStyleSheetHandler extends Object {
             prop = contexts[i];
 
             value = obj[prop];
-            if (value && typeof value == "string") caches += `${prop.replace(/[A-Z]/g, e => "\-" + e.toLowerCase())}: ${value};${i+1 == n ? "" : " "}`
+            if (value && typeof value == "string") caches += `${prop.replace(/[A-Z]/g, e => "\-" + e.toLowerCase())}: ${value};${i + 1 == n ? "" : " "}`
         }
 
         return caches;
@@ -1313,7 +1342,7 @@ export class skStyleSheetHandler extends Object {
             //     configurable: false,
             //     enumerable: false
             // });
-            
+
             // todos
             // style to attributes?.style
             // object to string
@@ -1323,7 +1352,7 @@ export class skStyleSheetHandler extends Object {
             if (style) {
                 et.style = this.convertStyleLikeJs("none", style)[1];
                 Object.defineProperty(et.attributes, "style", {
-                    get: (function() {
+                    get: (function () {
                         return this.convertObjectStyleToDeclaration(et?.style);
                     }).bind(this),
                     configurable: true,
@@ -1354,7 +1383,7 @@ export class skSurfaceCircle extends skSurface {
     constructor(...args) {
 
         super();
-        
+
         this.toCircle();
 
     }
@@ -1362,7 +1391,7 @@ export class skSurfaceCircle extends skSurface {
 
 export class skSurfaceTriangle extends skSurface {
 
-    constructor () {
+    constructor() {
 
         super();
 
@@ -1392,19 +1421,19 @@ export class skSurfaceTriangle extends skSurface {
         this.target.style.borderColor = `transparent transparent ${bg} transparent`;
         this.target.style.borderWidth = `calc(${h} * 1/3) calc(${w}/2) calc(${h} * 2/3) calc(${w}/2)`;
     }
-    
+
     rightArrow() {
         let { w, h, bg } = this.data;
         this.target.style.borderColor = `transparent transparent transparent ${bg}`;
         this.target.style.borderWidth = `calc(${h}/2) calc(${w} * 1/3) calc(${h}/2) calc(${w} * 2/3)`;
     }
-    
+
     bottomArrow() {
         let { w, h, bg } = this.data;
         this.target.style.borderColor = `${bg} transparent transparent transparent`;
         this.target.style.borderWidth = `calc(${h} * 2/3) calc(${w}/2) calc(${h} * 1/3) calc(${w}/2)`;
     }
-    
+
     leftArrow() {
         let { w, h, bg } = this.data;
         this.target.style.borderColor = `transparent ${bg} transparent transparent`;
@@ -1422,7 +1451,7 @@ export class skQueryManager extends skQuery {
         this.Bytes = new skBytes;
         this.StyleSheetHandler = new skStyleSheetHandler;
         this.BufferText = new skBufferText;
-    
+
         // customizable
         this.Surface = skSurface;
         this.SurfaceTriangle = skSurfaceTriangle;
@@ -1434,7 +1463,7 @@ export class skQueryManager extends skQuery {
         return this.parseQueries.bind(this);
     }
 
-    set Query(value) {} // writable no - permission
+    set Query(value) { } // writable no - permission
 }
 
 // export default function $ (context) {

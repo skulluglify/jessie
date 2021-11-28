@@ -17,6 +17,7 @@ export class Render extends Object {
 
         this.rules = new Array;
 
+        this.rules.push(this.parseCommitPerLine);
         this.rules.push(this.parseJavaScriptAuto);
         this.rules.push(this.parseQueryPerLine);
     }
@@ -25,11 +26,7 @@ export class Render extends Object {
 
         let obj, start, wait;
         obj = new Object; // alocate mems
-        obj.global = globalThis;
-        obj.skQueryManager = skQueryManager;
         obj.document = new DocumentFragment;
-        obj.document.root = document.createElement("root");
-        obj.document.append(obj.document.root);
         obj.selectors = new Array;
         obj.tabs = 0;
         obj.caches = "";
@@ -75,29 +72,122 @@ export class Render extends Object {
             obj.caches += puts;
         }
 
-        console.log(obj, obj.document.root);
+        return [ obj.document, obj?.selectors || new Array ];
+    }
+
+    //!TODOS
+    // FUTURES -- // /* */
+    get parseCommitPerLine() {
+
+        let fullComment;
+        fullComment = false;
+
+        return function __cache__ (obj) {
+
+            if (obj.caches.startsWith("\/\*")) fullComment = true;
+            
+            if (!!fullComment && obj.caches.endsWith("\*\/")) {
+                fullComment = false;
+                obj.caches = "";
+                return false;
+            }
+            
+            if (!!fullComment) {
+                obj.caches = "";
+                return false;
+            }
+
+
+            if (obj.caches.startsWith("--")) {
+                obj.caches = "";
+                return false;
+            }
+
+            return true;
+        }
     }
 
     get parseJavaScriptAuto() {
 
-        let contextJS, fnSync, fnReturn, doubleBrackets, doubleClosedBrackets, wrapQuote, caches;
+        let contextJS, fnSync, fnReturn, doubleBrackets, tripleQuotes, doubleClosedBrackets, tripleClosedQuotes, wrapQuote, caches;
         contextJS = "";
         fnSync = null;
         fnReturn = "";
         doubleBrackets = "";
+        tripleQuotes = ""; // new future
         doubleClosedBrackets = "";
+        tripleClosedQuotes = ""; // new future
         wrapQuote = false;
         caches = "";
 
-        let FN_HEADER = `"use strict"; let q, $, global; q = new this.skQueryManager; $ = q.Query; global = this.global; return (async function sync() {`;
+        let FN_HEADER = `"use strict"; let q, $, global; q = new this.skQueryManager; $ = q.Query; global = this.global; return (async function sync() {\n`;
 
-        let FN_CLOSED = "}).bind(this);";
+        let FN_CLOSED = "\n}).bind(this);";
 
         return async function __cache__(obj) {
 
-            if (doubleBrackets.length == 0) caches = "";
+            if (tripleQuotes.length == 0 && doubleBrackets.length == 0) caches = "";
             
             for (let puts of obj.caches) {
+
+                if (tripleQuotes.length < 3 && doubleBrackets.length == 0) {
+
+                    if (puts == "\"") {
+
+                        tripleQuotes += puts;
+                        continue;
+                    }
+
+                    caches += tripleQuotes;
+                    tripleQuotes = "";
+                } else
+                if (tripleQuotes.length > 2) {
+
+                    if (puts == "\"") {
+
+                        tripleClosedQuotes += puts;
+                        
+                            if (tripleClosedQuotes.length > 2) {
+
+                                try {
+                                    
+                                    let binding = new Object;
+                                    binding.global = globalThis;
+                                binding.skQueryManager = skQueryManager;
+                                binding.document = obj.document;
+                                
+                                fnSync = new Function(`${FN_HEADER} return \`${contextJS}\` ${FN_CLOSED}`).bind(binding).call();
+                            
+                                let wait = await fnSync.call();
+                                fnReturn = wait;
+                                
+                            } catch(e) {
+                                
+                                console.warn(e);
+                            }
+                            
+                            if (!["undefined", "null"].includes(fnReturn)) caches += fnReturn;
+
+                            contextJS = "";
+                            fnSync = null;
+                            fnReturn = "";
+                            tripleQuotes = "";
+                            tripleClosedQuotes = "";
+                            wrapQuote = false;
+                            
+                        }
+                        continue;
+                    }
+
+                    contextJS += tripleClosedQuotes;
+                    tripleClosedQuotes = "";
+
+                    contextJS += puts;
+                    continue;
+                }
+
+                // no conflicts
+                if (tripleQuotes.length > 2) continue;
 
                 if (doubleBrackets.length < 2) {
 
@@ -132,14 +222,18 @@ export class Render extends Object {
                         }
     
                         try {
-    
+
+                            let binding = new Object;
+                            binding.global = globalThis;
+                            binding.skQueryManager = skQueryManager;
+                            binding.document = obj.document;
                             
                             if (["\[\%", "\{\%"].includes(doubleBrackets)) {
     
-                                fnSync = new Function(`${FN_HEADER} return ${contextJS} ${FN_CLOSED}`).bind(obj).call();
+                                fnSync = new Function(`${FN_HEADER} return ${contextJS} ${FN_CLOSED}`).bind(binding).call();
                             } else {
                                 
-                                fnSync = new Function(`${FN_HEADER} ${contextJS} ${FN_CLOSED}`).bind(obj).call();
+                                fnSync = new Function(`${FN_HEADER} ${contextJS} ${FN_CLOSED}`).bind(binding).call();
                             }
         
                             wrapQuote = wrapQuote ? "\"" : "";
@@ -151,22 +245,24 @@ export class Render extends Object {
     
                             console.warn(e);
                         }
-    
-                        doubleBrackets = "";
-                        doubleClosedBrackets = "";
 
-                        console.log(fnReturn);
+                        // console.log(fnReturn);
     
                         if (!["undefined", "null"].includes(fnReturn)) caches += fnReturn;
-    
-                        fnReturn = "";
+
                         contextJS = "";
+                        fnSync = null;
+                        fnReturn = "";
+                        doubleBrackets = "";
+                        doubleClosedBrackets = "";
                         wrapQuote = false;
                         
                         continue;
                     }
 
+                    contextJS += doubleClosedBrackets;
                     doubleClosedBrackets = "";
+
                     contextJS += puts;
                     continue;
                 }
@@ -176,7 +272,9 @@ export class Render extends Object {
             
             obj.caches = caches;
 
-            if (doubleBrackets.length > 1 || contextJS.length > 0) return false;
+            if (contextJS.length > 0) contextJS += "\n";
+
+            if (tripleQuotes.length > 2 || doubleBrackets.length > 1) return false;
             return true;
         }
     }
@@ -237,11 +335,26 @@ export class Render extends Object {
                             et.html = attrs[attr];
                             delete et.attributes[attr];
                             break;
+
+                        case "specify":
+
+                            et.specify = attrs[attr];
+                            delete et.attributes[attr];
+                            break;
+
+                        case "cstyle":
+
+                            et.cstyle = attrs[attr];
+                            delete et.attributes[attr];
+                            break;
                     }
                 }
             }
 
-            if (text.length > 0) et.html = text;
+            if (text.length > 0) {
+                et.html = text;
+                text = "";
+            }
             
             element = q.createQuery(et);
 
@@ -266,7 +379,7 @@ export class Render extends Object {
 
                 mtabs = new Array;
                 elements = new Array;
-                parent = obj.document.root;
+                parent = obj.document;
                 
                 elements.push(element);
                 x = elements.length -1;

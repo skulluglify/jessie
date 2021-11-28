@@ -24,7 +24,9 @@ $(document).ready(function main() {
 
     (async function() {
 
-        console.log(r.eval(await fetch("example.jessie").then(e => e.text())));
+        let [ fragment, selectors ] = await r.eval(await fetch("example.jessie").then(e => e.text()));
+        console.log(fragment, selectors);
+        document.body.append(fragment);
     })()
 });
 
