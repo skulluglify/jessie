@@ -62,7 +62,7 @@ export class skQuery extends EventTarget {
 
         this.target = target;
         this.event = new skQueryEvent;
-        this.uuid = this.GENERATE_RAND_UUID;
+        // this.uuid = this.GENERATE_RAND_UUID;
 
         this.dispatchEvent(this.event);
     }

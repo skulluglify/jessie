@@ -1,0 +1,25 @@
+
+
+import "./index.mjs"
+import "./index.js"
+import "./index.css"
+
+include "mobile"
+
+        div[cstyle=background-color:limegreen;width:180px;height:180px;overflow:hidden;].ComponentClass
+
+            [[
+
+                console.log(imports("./lorem.txt"))
+
+                $(element).on("click", (e) => {
+
+                    alert("hallo world!");
+                })
+            ]]
+
+
+            span << Hallo World!
+
+            include "./lorem.txt"
+
