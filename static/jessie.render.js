@@ -2,7 +2,7 @@
     sk: skulluglify
 */
 
-import { skQueryManager } from "./jessie.js";
+import { skQueryManager, ElementTrace } from "./jessie.js";
 import { Package } from "./jessie.package.js";
 
 globalThis.package = Package;
@@ -18,7 +18,7 @@ export class Render extends Object {
 
         this.TABSPACESIZE = 4;
 
-        this.pipeline = new Array;
+        this.pipelines = new Array;
 
         this.package = new Package;
         this.path = this.package.path;
@@ -26,13 +26,35 @@ export class Render extends Object {
         this.nodups = new Array;
 
         this.defaultLocalePath = "";
+    }
 
-        // more addons ...
-        this.pipeline.push(this.parseCommitPerLine);
-        this.pipeline.push(this.parseJavaScriptAuto);
-        this.pipeline.push(this.parseNoDuplicateAuto);
-        this.pipeline.push(this.parseIncludeFilePerLine);
-        this.pipeline.push(this.parseQueryPerLine);
+    usePipeline(pipeline) {
+
+        this.pipelines.splice(0,0,pipeline);
+    }
+    
+    get parseInit() {
+
+        let has_initialized = false;
+
+        return function __init__() {
+
+            if (!has_initialized) {
+                
+                this.pipelines.splice(0,0,this.parseBetterLookQueryPerLine);
+                this.pipelines.splice(0,0,this.parseIncludeFilePerLine);
+                this.pipelines.splice(0,0,this.parseConfigVirtualAuto);
+                this.pipelines.splice(0,0,this.parseNoDuplicateAuto);
+                this.pipelines.splice(0,0,this.parseJavaScriptAuto);
+                this.pipelines.splice(0,0,this.parseCommitPerLine);
+                // this.pipelines.push(this.parseCommitPerLine);
+                // this.pipelines.push(this.parseJavaScriptAuto);
+                // this.pipelines.push(this.parseNoDuplicateAuto);
+                // this.pipelines.push(this.parseIncludeFilePerLine);
+                this.pipelines.push(this.parseQueryPerLine);
+                has_initialized = false;
+            }
+        }   
     }
 
     _get_source(src) {
@@ -79,6 +101,75 @@ export class Render extends Object {
         return src;
     }
 
+    _split_shl(context) {
+
+        let arrayList = new Array;
+
+        let data = Array.from(context);
+
+        let _shl = 0;
+
+        let _shl_index = 0;
+
+        let n = data.length;
+
+        for (let i = 0; i < n; i++) {
+
+            let puts = data[i];
+
+            if (puts == "<") {
+
+                _shl += 1;
+                _shl_index = i;
+
+                if (_shl == 2) break;
+            }
+
+            _shl = 0;
+        }
+
+        if (_shl_index > 0) {
+
+            arrayList.push(context.substr(0,_shl_index -1));
+            arrayList.push(context.substr(_shl_index +1, context.length));
+
+        } else {
+
+            arrayList.push(context);
+        }
+
+        return arrayList;
+    }
+
+    async _fetch_auto_cache(input, init) {
+
+        let key = input.replaceAll("/", "_").replaceAll(".", "_");
+
+        let sizeStorage = await navigator.storage.estimate();
+        let sizeLimitCache = 150 * 1e3;
+        let sizeLimitCacheLength = Math.floor(sizeStorage.quota / sizeLimitCache);
+
+        let dataLocal = localStorage.getItem(key);
+
+        if (!dataLocal) {
+
+            let data = await fetch(input, init);
+            let context = await data.text();
+
+            // limit 150KB
+            let sizeFile = context.length * 8;
+
+            if (sizeFile <= sizeLimitCache && localStorage.length <= sizeLimitCacheLength) {
+    
+                localStorage.setItem(key, context);
+            }
+    
+            return context;
+        }
+
+        return dataLocal;
+    }
+
     setDefaultLocalePath(src) {
 
         this.defaultLocalePath = src;
@@ -89,14 +180,18 @@ export class Render extends Object {
         let obj, start, wait;
         obj = new Object; // alocate mems
 
-        let defaultLocalePath = `${this.defaultLocalePath}`;
+        this.parseInit();
 
-        obj.imports = function __import__ (src) {
+        let defaultLocalePath = `${this.defaultLocalePath}`; // copy string
+
+        obj.virtualConfig = {};
+
+        obj.imports = async function __import__ (src) {
 
             let render = new Render;
             render.setDefaultLocalePath(defaultLocalePath);
 
-            return fetch(render._get_source(src));
+            return render._fetch_auto_cache(render._get_source(src));
         }
         
         obj.document = new DocumentFragment;
@@ -111,10 +206,14 @@ export class Render extends Object {
 
         obj.element = new DocumentFragment;
         obj.parent = obj.element;
+        obj.currentElement = obj.parent;
+        
         obj.selectors = new Array;
         obj.nodups = Array.from(this.nodups);
+        
         obj.tabs = 0;
         obj.caches = "";
+        
         start = true;
         wait = true;
 
@@ -139,7 +238,7 @@ export class Render extends Object {
                 obj.caches = q.unSpaceText(obj.caches);
 
                 if (obj.caches.length > 0) {
-                    for (let rule of this.pipeline) {
+                    for (let rule of this.pipelines) {
                         if (rule && typeof rule == "function" && obj.caches.length > 0) {
                             wait = await rule(obj);
                             if (!wait) break;
@@ -177,7 +276,7 @@ export class Render extends Object {
 
         this.setDefaultLocalePath(dirname);
 
-        let context = await fetch(src).then(e => e.text());
+        let context = await this._fetch_auto_cache(src);
         let data = await this.eval(context);
 
         document.body.append(data.element);
@@ -197,7 +296,7 @@ export class Render extends Object {
         return data;
     }
 
-    //!TODOS
+    //TODOs
     // FUTURES -- // /* */
     get parseCommitPerLine() {
 
@@ -251,6 +350,7 @@ export class Render extends Object {
                 } else if (obj.caches.startsWith(IMPORT_HEADER)) {
                     
                     obj.caches = obj.caches.substr(IMPORT_HEADER.length, obj.caches.length);
+
                 } else {
 
                     throw `something wrong!`;
@@ -281,7 +381,7 @@ export class Render extends Object {
                                 
                             case "mjs":
 
-                                element_builder_context = `script[async&src="${src}"&type="module"]`;
+                                element_builder_context = `script[src="${src}"&type="module"&async]`;
                                 break;
                                 
                             case "css":
@@ -376,7 +476,77 @@ export class Render extends Object {
         }.bind(this))
     }
 
-    get parseBetterQueryPerLine() {
+    get parseBetterLookQueryPerLine() {
+
+        let _split_shl = this._split_shl;
+
+        return async function __cache__(obj) {
+
+            if (obj.virtualConfig?.virtual_better_look) {
+
+                let concept = _split_shl(obj.caches);
+
+                let selector = q.unSpaceText(concept.shift());
+
+                let nodeName = "";
+                let nodeAttributes = new Array;
+
+                let nodeId = "";
+                let nodeClassLists = new Array;
+
+                let dataTrace = selector.split(" ");
+
+                nodeName = dataTrace.shift();
+
+                dataTrace.forEach((value) => {
+
+                    if (value.includes("=")) {
+
+                        nodeAttributes.push(value);
+                    }
+                    else if (value.startsWith("#")) {
+
+                        nodeId = value;
+                    }
+                    else if (value.startsWith(".")) {
+
+                        nodeClassLists.push(value);
+                    }
+                })
+
+                let attributes = "";
+                let classLists = "";
+
+                if (nodeAttributes.length > 0) {
+
+                    attributes = `[${nodeAttributes.join("&")}]`;
+                }
+
+                if (nodeId.length > 0) {
+
+                    nodeId = "#" + nodeId;
+                }
+
+                if (nodeClassLists.length > 0) {
+
+                    classLists = `.${nodeClassLists.join(".")}`;
+                }
+
+                obj.caches = `${nodeName}${attributes}${nodeId}${classLists}`;
+
+                if (concept.length > 0) {
+
+                    obj.caches += " <<" + concept.shift();
+                }
+            }
+
+            return true;
+        }
+    }
+
+    //TODOs
+    // Coming Soon ... im lazy dude!
+    get parseNoDuplicateAuto() {
 
         return async function __cache__(obj) {
 
@@ -384,9 +554,27 @@ export class Render extends Object {
         }
     }
 
-    get parseNoDuplicateAuto() {
+    get parseConfigVirtualAuto() {
+
+        let cache, dot, CONFIG_HEADER;
+        cache = "";
+        dot = ".";
+        CONFIG_HEADER = "!config";
 
         return async function __cache__(obj) {
+
+            cache = obj.caches;
+
+            if (cache.startsWith(CONFIG_HEADER + dot)) {
+
+                cache = cache.substr(CONFIG_HEADER.length + 1, cache.length);
+
+                let [configname, configvalue, ...ignored] = cache.split(" ");
+
+                obj.virtualConfig[configname] = configvalue == "true" ? true : (configvalue == "false" ? false : null);
+
+                return false;
+            }
 
             return true;
         }
@@ -409,15 +597,21 @@ export class Render extends Object {
 
         let FN_CLOSED = "\n}).bind(this);";
 
+        let binding = new Object;
+
+        binding.global = globalThis;
+        binding.skQueryManager = skQueryManager;
+        
         return async function __cache__(obj) {
 
             if (tripleQuotes.length == 0 && doubleBrackets.length == 0) caches = "";
 
-            let n = obj.caches.length;
+            let data = Array.from(obj.caches);
+            let n = data.length;
             
             for (let i = 0; i < n; i++) {
 
-                let puts = obj.caches[i];
+                let puts = data[i];
 
                 if (doubleBrackets.length > 1) {
 
@@ -448,17 +642,14 @@ export class Render extends Object {
 
                         tripleClosedQuotes += puts;
                         
-                            if (tripleClosedQuotes.length > 2) {
+                        if (tripleClosedQuotes.length > 2) {
 
-                                try {
-                                    
-                                let binding = new Object;
-                                binding.global = globalThis;
-                                binding.skQueryManager = skQueryManager;
+                            try {
+
+                                // auto refresh
                                 binding.document = obj.document;
-                                binding.element = obj.element;
+                                binding.element = obj.currentElement;
                                 binding.imports = obj.imports;
-                                // imports(src)
                                 
                                 fnSync = new Function(`${FN_HEADER} return \`${contextJS}\` ${FN_CLOSED}`).bind(binding).call();
                             
@@ -535,19 +726,19 @@ export class Render extends Object {
     
                         try {
 
-                            let binding = new Object;
-                            binding.global = globalThis;
-                            binding.skQueryManager = skQueryManager;
+                            // auto refresh
                             binding.document = obj.document;
-                            binding.element = obj.element;
+                            binding.element = obj.currentElement;
                             binding.imports = obj.imports;
                             
                             if (["\[\%", "\{\%"].includes(doubleBrackets)) {
     
                                 fnSync = new Function(`${FN_HEADER} return ${contextJS} ${FN_CLOSED}`).bind(binding).call();
+                            
                             } else {
                                 
                                 fnSync = new Function(`${FN_HEADER} ${contextJS} ${FN_CLOSED}`).bind(binding).call();
+                            
                             }
         
                             wrapQuote = wrapQuote ? "\"" : "";
@@ -598,9 +789,10 @@ export class Render extends Object {
 
     get parseQueryPerLine() {
 
-        let parent, shl, et, attrs, element, selectorText, elements, mtabs, tabs, text, x;
+        let _split_shl, parent, concept, et, attrs, element, selectorText, elements, mtabs, tabs, text, x;
+        _split_shl = this._split_shl;
         parent = null;
-        shl = new Array;
+        concept = new Array;
         et = null;
         attrs = null;
         element = null;
@@ -615,17 +807,28 @@ export class Render extends Object {
 
             tabs = obj.tabs;
 
-            shl = obj.caches.split("<<");
+            concept = _split_shl(obj.caches);
 
-            if (shl.length > 0) {
+            if (concept.length > 0) {
 
-                obj.caches = q.unSpaceText(shl[0]);
+                obj.caches = q.unSpaceText(concept.shift());
 
-                if (shl.length > 1) {
-
-                    text = q.unSpaceText(shl[1]);
+                if (concept.length > 0) {
+    
+                    text = q.unSpaceText(concept.shift());
                 }
             }
+
+            // concept = obj.caches.split("<<");
+            // if (concept.length > 0) {
+
+            //     obj.caches = q.unSpaceText(concept[0]);
+
+            //     if (concept.length > 1) {
+    
+            //         text = q.unSpaceText(concept[1]);
+            //     }
+            // }
 
             [ et, selectorText ] = q.createQuery(obj.caches, false);
 
@@ -702,8 +905,12 @@ export class Render extends Object {
                 elements.push(element);
                 x = elements.length -1;
                 element = elements[x];
+
+                obj.currentElement = element;
+
                 parent.append(element);
                 mtabs.push(tabs);
+
             } else
             {
 
@@ -714,19 +921,24 @@ export class Render extends Object {
                     obj.parent = parent;
                     elements.push(element);
                     element = elements[x +1];
+
+                    obj.currentElement = element;
+
                     parent.append(element);
                     mtabs.push(tabs);
+    
                 } else 
                 {
 
                     x = mtabs.indexOf(tabs);
                     elements[x] = element;
                     element = elements[x];
+
+                    obj.currentElement = element;
+
                     elements[x -1].append(element);
                 }
             }
-
-            // console.log(tabs, element);
 
             return false; // no more added parse function, any was null or empty!
         }
@@ -748,7 +960,7 @@ export class RenderFile {
 
         src = this.path.simplify(src);
 
-        let module = this.module;
+        // let module = this.module;
         let path = this.path;
         let dirname = path.dirname(src);
         let basename = path.basename(src);
@@ -756,7 +968,8 @@ export class RenderFile {
 
         render.setDefaultLocalePath(dirname);
 
-        let text = await module(src);
+        // let text = await module(src);
+        let text = await render._fetch_auto_cache(src);
         let data = await render.eval(text);
 
         return {
@@ -773,12 +986,13 @@ export class RenderFile {
 
         src = this.path.simplify(src);
         
-        let module = this.module;
+        // let module = this.module;
         let render = new Render;
         
         // render.setDefaultLocalePath("./jessie_modules");
             
-        let text = await module(src);
+        // let text = await module(src);
+        let text = await render._fetch_auto_cache(src);
         let data = await render.eval(text);
 
         return data;

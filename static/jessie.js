@@ -251,6 +251,47 @@ export class skQuery extends EventTarget {
         return obj;
     }
 
+    createSelectorText(elementTrace) {
+
+        let nodeName = elementTrace?.nodeName || "";
+        let nodeId = elementTrace?.id || "";
+        let nodeClassLists = Array.from(elementTrace?.classList || []);
+        let nodeAttributes = elementTrace?.attributes || {};
+        let nodeAttributeKeys = Object.keys(nodeAttributes);
+
+        let attributes = "";
+
+        nodeClassLists = nodeClassLists.join(".");
+
+        if (nodeClassLists.length > 0) {
+
+            nodeClassLists = "." + nodeClassLists;
+        }
+        
+        if (nodeId.length > 0) {
+
+            nodeId = `#${nodeId}`;
+        }
+
+        if (key.length > 0) {
+
+            attributes = nodeAttributeKeys.map((key) => {
+    
+                let attr = nodeAttributes[key];
+                if (attr.length > 0) {
+                    return `${key}=${nodeAttributes[key]}`;
+                }
+    
+                return key;
+    
+            }).join("&")
+
+            attributes = `[${attributes}]`;
+        }
+
+        return `${nodeName}${attributes}${nodeId}${nodeClassLists}`
+    }
+
     // ex: let [ elementTrace, context ] = q.createQuery("div[style=background-color: limegreen; width: 20%; height: 20%; margin: 4%;]#test.smallGroup.union", false);
     createQuery(context, create = true) {
 
@@ -439,7 +480,7 @@ export class skQuery extends EventTarget {
         if (attrs.length > 0) {
             obj["attributes"] = new Object;
             for (let attr of attrs) {
-                if (attr.length > 1) {
+                if (attr.length > 1) { // array key, value
                     if (create) element.setAttribute(attr[0], attr[1]);
                     obj["attributes"][attr[0]] = attr[1];
                 } else {
@@ -456,7 +497,7 @@ export class skQuery extends EventTarget {
     parseQueries(queries) {
 
         const target = this.target || document;
-        const skQueryClone = this.constructor.bind(this);
+        const skQueryClone = skQuery;
         const isarray = this.isArray(target);
 
         if (target) {
@@ -497,19 +538,20 @@ export class skQuery extends EventTarget {
 
             case "object":
 
+                
                 if (skQueryClone.prototype.isPrototypeOf(queries)) queries = queries?.target || queries;
-
+                
                 if (this.isArray(queries)) {
 
                     return new skQueryClone(queries.map(q => this.parseQueries(q)));
                 } else
-                    if (Element.prototype.isPrototypeOf(queries) ||
-                        Document.prototype.isPrototypeOf(queries) ||
-                        DocumentFragment.prototype.isPrototypeOf(queries) ||
-                        Window.prototype.isPrototypeOf(queries)) {
+                if (Element.prototype.isPrototypeOf(queries) ||
+                    Document.prototype.isPrototypeOf(queries) ||
+                    DocumentFragment.prototype.isPrototypeOf(queries) ||
+                    Window.prototype.isPrototypeOf(queries)) {
 
-                        return new skQueryClone(queries);
-                    }
+                    return new skQueryClone(queries);
+                }
 
                 break;
 
@@ -540,7 +582,7 @@ export class skQuery extends EventTarget {
     class(...cls) {
 
         const target = this.target || document?.body;
-        const skQueryClone = this.constructor.bind(this);
+        const skQueryClone = skQuery;
         const isarray = this.isArray(target);
 
         if (cls.length > 0) {
@@ -557,7 +599,7 @@ export class skQuery extends EventTarget {
     classRemove(...cls) {
 
         const target = this.target || document?.body;
-        const skQueryClone = this.constructor.bind(this);
+        const skQueryClone = skQuery;
         const isarray = this.isArray(target);
 
         if (cls.length > 0) {
@@ -621,7 +663,7 @@ export class skQuery extends EventTarget {
         if (degrees && typeof degrees == "number") degrees = `${degrees}deg`
 
         const target = this.target || document?.body;
-        const skQueryClone = this.constructor.bind(this);
+        const skQueryClone = skQuery;
         const transforms = this.ignoreTransformStyle(target?.style?.transform || "", "rotate");
         const isarray = this.isArray(target);
 
@@ -639,7 +681,7 @@ export class skQuery extends EventTarget {
         if (typeof h == "string") h = parseInt(h);
 
         const target = this.target || document?.body;
-        const skQueryClone = this.constructor.bind(this);
+        const skQueryClone = skQuery;
         const transforms = this.ignoreTransformStyle(target?.style?.transform || "", "scale");
         const isarray = this.isArray(target);
 
@@ -657,7 +699,7 @@ export class skQuery extends EventTarget {
         // if (typeof y == "number") y = `${y}px`;
 
         const target = this.target || document?.body;
-        const skQueryClone = this.constructor.bind(this);
+        const skQueryClone = skQuery;
         // const transforms = this.ignoreTransformStyle(target?.style?.transform || "", [ "translate", "translateX", "translateY" ]);
         const transforms = this.ignoreTransformStyle(target?.style?.transform || "", ["translateX", "translateY"]);
         const isarray = this.isArray(target);
@@ -677,7 +719,7 @@ export class skQuery extends EventTarget {
         if (typeof x == "number") x = `${x}px`;
 
         const target = this.target || document?.body;
-        const skQueryClone = this.constructor.bind(this);
+        const skQueryClone = skQuery;
         // const transforms = this.ignoreTransformStyle(target?.style?.transform || "", [ "translate", "translateX" ]);
         const transforms = this.ignoreTransformStyle(target?.style?.transform || "", "translateX");
         const isarray = this.isArray(target);
@@ -695,7 +737,7 @@ export class skQuery extends EventTarget {
         if (typeof y == "number") y = `${y}px`;
 
         const target = this.target || document?.body;
-        const skQueryClone = this.constructor.bind(this);
+        const skQueryClone = skQuery;
         // const transforms = this.ignoreTransformStyle(target?.style?.transform || "", [ "translate", "translateY" ]);
         const transforms = this.ignoreTransformStyle(target?.style?.transform || "", "translateY");
         const isarray = this.isArray(target);
@@ -713,7 +755,7 @@ export class skQuery extends EventTarget {
         if (typeof value == "number") value = `${value}px`;
 
         const target = this.target || document?.body;
-        const skQueryClone = this.constructor.bind(this);
+        const skQueryClone = skQuery;
         const isarray = this.isArray(target);
 
         if (target) {
@@ -739,7 +781,7 @@ export class skQuery extends EventTarget {
     hide() {
 
         const target = this.target || document?.body;
-        const skQueryClone = this.constructor.bind(this);
+        const skQueryClone = skQuery;
         const display = target?.style?.display || "";
         const isarray = this.isArray(target);
 
@@ -758,7 +800,7 @@ export class skQuery extends EventTarget {
     show() {
 
         const target = this.target || document?.body;
-        const skQueryClone = this.constructor.bind(this);
+        const skQueryClone = skQuery;
         const display = target?.style?.display || "";
         const isarray = this.isArray(target);
 
@@ -773,7 +815,7 @@ export class skQuery extends EventTarget {
     on(type, listener, options = true) {
 
         const target = this.target || document?.body;
-        const skQueryClone = this.constructor.bind(this);
+        const skQueryClone = skQuery;
         const isarray = this.isArray(target);
 
         if (target && type && typeof type == "string") {
@@ -798,7 +840,7 @@ export class skQuery extends EventTarget {
     removeEvent(type, listener, options) {
 
         const target = this.target || document?.body;
-        const skQueryClone = this.constructor.bind(this);
+        const skQueryClone = skQuery;
         const isarray = this.isArray(target);
 
         if (target && type && typeof type == "string") {
@@ -1460,7 +1502,12 @@ export class skQueryManager extends skQuery {
 
     get Query() {
 
-        return this.parseQueries.bind(this);
+        return function __query__(queries) {
+
+            let query = new skQuery;
+
+            return query.parseQueries(queries);
+        };
     }
 
     set Query(value) { } // writable no - permission
