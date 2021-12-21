@@ -273,7 +273,9 @@ export class skQuery extends EventTarget {
             nodeId = `#${nodeId}`;
         }
 
-        if (key.length > 0) {
+        nodeName = nodeName.toLowerCase();
+
+        if (nodeAttributeKeys.length > 0) {
 
             attributes = nodeAttributeKeys.map((key) => {
     
