@@ -1,0 +1,288 @@
+!config.virtual_better_look true
+
+include "cssbuiltin"
+include "normalize"
+include "images"
+
+[[
+
+    function getRandomRangeInt (min, max) {
+
+    	return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+	function shuffle (array) {
+
+		let currentIndex, temporaryValue, randomIndex;
+
+        for (currentIndex = 0; currentIndex < array.length; currentIndex++) {
+
+			randomIndex = Math.floor(Math.random() * currentIndex);
+			temporaryValue = array[currentIndex];
+			array[currentIndex] = array[randomIndex];
+			array[randomIndex] = temporaryValue;
+        }
+
+		return array;
+	}
+
+	function obfuscate (ctx, image, sizeOfPieces, sliceWidth, sliceHeight, slices) {
+
+		// let ctx = canvas.getContext('2d');
+
+		let s, row, col, x, y, canvasRow, canvasCol, canvasX, canvasY;
+
+		for(let i in slices){
+
+			s = slices[i];
+			
+			row = Math.floor(s / sizeOfPieces);
+			col = s - row * sizeOfPieces;
+			
+			x = col * sliceWidth;
+			y = row * sliceHeight;
+
+			x = Math.abs(x);
+			y = Math.abs(y);
+
+			canvasRow = Math.floor(i / sizeOfPieces);
+			canvasCol = i - canvasRow * sizeOfPieces;
+
+			canvasX = canvasCol * sliceWidth;
+			canvasY = canvasRow * sliceHeight;
+
+			canvasX = Math.abs(canvasX);
+			canvasY = Math.abs(canvasY);
+
+			ctx.drawImage(image,x,y,sliceWidth,sliceHeight,canvasX,canvasY,sliceWidth,sliceHeight);
+			console.log(x,y,sliceWidth,sliceHeight,canvasX,canvasY,sliceWidth,sliceHeight);
+
+		}
+
+		// return canvas.toDataURL();
+		// return canvas;
+
+	}
+
+	local.scramble = function scramble (context, image) {
+
+		return new Promise((resolve, reject) => {
+			
+		    let canvas = document.createElement("canvas");
+
+			canvas.width = image.width;
+			canvas.height = image.height;
+
+		    canvas.imageSmoothingEnabled = true;
+		    canvas.imageSmoothingQuality = "high";
+
+			let sizeOfPieces = 512;
+			let sliceCount = sizeOfPieces * sizeOfPieces;
+			let sliceWidth, sliceHeight; // number
+			let slices = [];
+			let json; // string
+
+			let width, height;
+
+			sliceWidth = Math.floor(image.width / sizeOfPieces);
+			sliceHeight = Math.floor(image.height / sizeOfPieces);
+
+			width = sliceWidth * sizeOfPieces;
+			height = sliceHeight * sizeOfPieces;
+
+			let ctx = canvas.getContext("2d");
+
+			ctx.drawImage(image, 0, 0, image.width, image.height);
+
+			for (let i = 0; i < sliceCount; i++) {
+
+				slices.push(i);
+			}
+
+			slices = shuffle(slices);
+
+			// console.log(sliceWidth, sliceHeight, slices.length)
+
+			obfuscate(ctx, image, sizeOfPieces, sliceWidth, sliceHeight, slices);
+
+			let image_rect = [ 0, 0, image.width, image.height ];
+
+			context.drawImage(canvas, ...image_rect, ...image_rect);
+
+			slices.unshift(sizeOfPieces, sizeOfPieces);
+			json = JSON.stringify(slices);
+
+			resolve(json);
+		});
+	}
+
+	function deobfuscate (ctx, image, sizeOfPieces, sliceWidth, sliceHeight, slices) {
+
+		// let ctx = canvas.getContext('2d');
+
+		let s, row, col, x, y, canvasRow, canvasCol, canvasX, canvasY;
+
+		for (let i in slices) {
+
+			s = slices[i];
+			
+			row = Math.floor(s / sizeOfPieces);
+			col = s - row * sizeOfPieces;
+			
+			x = col * sliceWidth;
+			y = row * sliceHeight;
+
+			x = Math.abs(x);
+			y = Math.abs(y);
+
+			canvasRow = Math.floor(i / sizeOfPieces);
+			canvasCol = i - canvasRow * sizeOfPieces;
+
+			canvasX = canvasCol * sliceWidth;
+			canvasY = canvasRow * sliceHeight;
+
+			canvasX = Math.abs(canvasX);
+			canvasY = Math.abs(canvasY);
+
+			ctx.drawImage(image,canvasX,canvasY,sliceWidth,sliceHeight,x,y,sliceWidth,sliceHeight);
+			// console.log(canvasX,canvasY,sliceWidth,sliceHeight,x,y,sliceWidth,sliceHeight);
+
+		}
+
+		// canvas.toBlob((e) => {
+
+			// console.log(e);
+			
+		// }, "image/jpeg", 100);
+
+		// return canvas.toDataURL();
+
+		// return canvas;
+
+	}
+
+	local.unscramble = function unscramble(context, image, keys) {
+
+		return new Promise((resolve, reject) => {
+			
+		    let canvas = document.createElement("canvas");
+
+		    canvas.width = image.width;
+		    canvas.height = image.height;
+
+		    canvas.imageSmoothingEnabled = true;
+		    canvas.imageSmoothingQuality = "high";
+
+			let sizeOfPieces = 32;
+			let sliceCount = sizeOfPieces * sizeOfPieces;
+			let sliceWidth, sliceHeight; // number
+			let slices = [];
+			// let json; // string
+
+			let ctx = canvas.getContext('2d');
+
+			slices = keys;
+
+			slices.splice(0, 2);
+
+			// ceil can use
+			sliceWidth = Math.floor(image.width / sizeOfPieces);
+			sliceHeight = Math.floor(image.height / sizeOfPieces);
+
+			// for (let i = 0; i < sliceCount; i++) {
+
+				// slices.push(i);
+			// }
+
+			deobfuscate(ctx, image, sizeOfPieces, sliceWidth, sliceHeight, slices);
+
+			let image_rect = [ 0, 0, image.width, image.height ];
+
+			context.drawImage(canvas, ...image_rect, ...image_rect);
+
+			// slices.unshift(sizeOfPieces, sizeOfPieces);
+			// json = JSON.stringify(slices);
+
+			resolve(null);
+		});
+	} 
+
+]]
+
+
+    /* query version 2 */
+    canvas cstyle="width:100vw;height:100%;" specify=yes #canvas2d
+
+    [[
+
+        let canvas = $(element)?.target;
+
+	    canvas.imageSmoothingEnabled = true;
+	    canvas.imageSmoothingQuality = "high";
+
+        let ctx = canvas.getContext("2d");
+
+        $("body").on("jessie.ready", () => {
+
+        	let source = q.getSource("source.winter");
+        	// let source = q.getSource("source.winter.scramble");
+        	// let scrambel_key = q.getSource("source.winter.scramble.key");
+
+        	console.log(source);
+        	// console.log(scrambel_key);
+
+        	let image = new Image;
+
+        	image.src = source.src;
+        	image.type = source.type;
+        	image.crossOrigin="anonymous";
+
+        	let exec = q.onceCall(() => {
+
+				// synchronous
+        		(async function sync() {
+
+        		    canvas.width = image.width;
+        		    canvas.height = image.height;
+
+        	    	let keys = await local.scramble(ctx, image);
+
+        	    	// let response = await fetch(scrambel_key.src);
+        	    	// let keys = await response.json();
+
+        	    	// await local.unscramble(ctx, image, keys);
+
+        	    	console.log(keys);
+
+        	    	$(image).on("load", (e) => {
+        	    		
+		        	    canvas.width = image.naturalWidth;
+		        	    canvas.height = image.naturalHeight;
+
+		                let image_rect = [ 0, 0, image.width, image.height ];
+
+				        $(canvas).on("contextmenu", (e) => {
+
+				        	// console.log(canvas.toDataURL()); // image/png
+				        	e.preventDefault();
+				        	e.stopPropagation();
+				        });
+
+		        		ctx.drawImage(image, ...image_rect, ...image_rect);
+        	    	});
+        		})();
+        	});
+
+        	$(image).on("load", exec);
+        });
+
+    ]]
+
+    script >> EOF
+
+        let event = document.createEvent("HTMLEvents");
+        event.initEvent("jessie.ready", true, true);
+        document.body.dispatchEvent(event);
+        console.log(document.querySelector("source"))
+
+    EOF

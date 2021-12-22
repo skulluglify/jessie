@@ -1,39 +1,104 @@
+!config.virtual_better_look true
 
+include "./index.css"
 
-import "./index.mjs"
-import "./index.js"
-import "./index.css"
+[[
 
-include "mobile"
+    local.navbar_box_css = q.unSpaceText(`
 
-        div[cstyle="""
-            
-            background-color: limegreen;
-            width: 180px;
-            height: 180px;
-            overflow: hidden;
-            backdrop-filter: blur(12px);
+        width: 92px;
+        height: 92px;
+        background-color: transparent;
+        color: white;
+        font-family: Roboto;
+        font-weight: 700;
+        /* border-right: 2px solid grey; */
+        box-sizing: border-box;
 
-        """].ComponentClass
+    `).replaceAll("\n","");
 
-            button[text=" dont click me! "]#alert
+    local.keep_navbar_box_bg = "transparent";
 
-                [[
+    local.navbar_box_hover = (element) => ({
 
-                    console.log(imports("./lorem.txt"))
+        focus: (e) => {
 
-                    $(element).on("click", (e) => {
+            element.style.backgroundColor = "limegreen";
+        },
 
-                        console.log(e);
+        leave: (e) => {
 
-                        alert("hallo world!");
-                    })
+            element.style.backgroundColor = "skyblue";
 
-                    console.log($(element));
-                ]]
+            setTimeout(() => {
 
+                element.style.backgroundColor = local.keep_navbar_box_bg;
 
-            span << Hallo World!
+            }, 200);
+        }
 
-            include "./lorem.txt"
+    });
+    
+]]
 
+div .navbar
+
+    div cstyle={% local.navbar_box_css %} .box .center .sfx_hit_button
+
+        [[
+
+            $(element).hover(local.navbar_box_hover(element));
+
+        ]]
+
+        img src={%getUrl("./img/admin.x80.png")%}
+
+    div .box .center .sfx_hit_button
+
+        [[
+
+            $(element).hover(local.navbar_box_hover(element));
+
+        ]]
+
+        span << Home
+    
+    div .box .center .sfx_hit_button
+
+        [[
+
+            $(element).hover(local.navbar_box_hover(element));
+
+        ]]
+
+        span << About
+
+    div .box .center .sfx_hit_button
+
+        [[
+
+            $(element).hover(local.navbar_box_hover(element));
+
+        ]]
+
+        span << Blog
+
+    div .box .center .sfx_hit_button
+
+        [[
+
+            $(element).hover(local.navbar_box_hover(element));
+
+        ]]
+
+        span << Service
+
+    div .box .center .sfx_hit_button
+
+        [[
+
+            $(element).hover(local.navbar_box_hover(element));
+
+        ]]
+
+        span << Contact

@@ -1,3 +1,4 @@
 node_modules/*
 static.bak/temp/*
 .shasums/*
+jessie_modules/fonts/*.zip

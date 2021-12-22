@@ -1,0 +1,30 @@
+
+
+
+
+
+
+
+
+
+
+// nodup name="NV_MAIN_COMPONENT_H"
+
+    // nodup include "./navbar"
+
+include "./navbar"
+
+    p << """
+
+        Ad sunt enim et elit ad ad occaecat. Esse elit esse reprehenderit do dolore. Sint non nisi elit fugiat tempor Lorem duis in ea nisi exercitation. Cillum eiusmod ullamco ipsum do. Laborum deserunt eiusmod adipisicing non consequat sit eu eiusmod laborum culpa pariatur proident. Ad aute excepteur aliquip pariatur eu tempor dolor pariatur nostrud. Incididunt excepteur est labore veniam et ullamco est ullamco minim voluptate veniam exercitation laboris.
+    Qui officia reprehenderit occaecat ea proident do est qui. Anim ad ad et veniam occaecat. Occaecat consequat adipisicing irure duis occaecat adipisicing excepteur dolor non proident.
+    Dolor sunt ullamco commodo duis officia consectetur nostrud nostrud sit in officia nostrud veniam est. Mollit id incididunt laboris pariatur elit id aliquip qui sunt magna mollit eiusmod mollit non. Duis incididunt cupidatat esse magna reprehenderit in qui. Occaecat cillum irure duis enim fugiat ad magna culpa nisi velit. Sit qui esse exercitation deserunt voluptate officia fugiat irure reprehenderit. Qui nulla non exercitation minim ullamco qui duis id sunt ullamco veniam magna occaecat.
+    Enim esse eiusmod id non consequat eiusmod nostrud. Irure aliqua non eu irure adipisicing. Consectetur est fugiat labore commodo non laboris aliquip. Excepteur Lorem fugiat sit laboris occaecat. Adipisicing cupidatat laboris enim reprehenderit duis amet ipsum. Officia aute ipsum deserunt cillum.
+    Ullamco ad exercitation irure consequat mollit excepteur proident esse. In velit commodo do sint nulla magna sunt eu nisi excepteur velit. Sunt fugiat commodo qui tempor eu amet consectetur in enim pariatur veniam est excepteur. Commodo aliqua reprehenderit eu labore dolore pariatur officia dolore culpa eiusmod anim qui adipisicing sunt. Anim ex labore officia nostrud adipisicing qui veniam deserunt ullamco consectetur.
+    Sit ea velit do ad id amet mollit. Cupidatat commodo nulla elit cillum nostrud cillum ad fugiat ut sunt velit adipisicing sint velit. Enim fugiat incididunt do voluptate aute qui culpa dolor. Sint aliquip qui non consectetur.
+    Occaecat exercitation adipisicing dolore consectetur id voluptate. Cillum enim labore exercitation excepteur id magna nisi qui officia dolore dolore officia irure laborum. Pariatur nisi culpa deserunt id duis incididunt ipsum ullamco irure officia reprehenderit ex sunt in. Fugiat elit et consequat pariatur enim proident et. Et elit minim voluptate exercitation ullamco cillum ad commodo ut. Officia commodo ad in velit. Magna do proident dolor elit adipisicing adipisicing cillum amet est ullamco ex.
+    Laboris nisi officia minim laboris ullamco duis enim tempor. Proident ad labore esse anim deserunt qui minim deserunt laborum. Aute id reprehenderit et consequat anim exercitation Lorem non ut qui veniam elit.
+    Consectetur ullamco amet aute ipsum nisi veniam nulla ut in exercitation. Enim exercitation ullamco pariatur consequat ut aliqua ut ullamco sunt fugiat. Enim ut laboris do esse velit adipisicing. Non pariatur quis cupidatat nulla aliqua voluptate irure aute sunt sunt. Irure sint quis id laboris dolor in fugiat nulla sit reprehenderit ea ut eu. Sint do voluptate ullamco enim sunt irure qui.
+    Ex ea ipsum qui ad duis nulla cupidatat commodo duis velit. Deserunt mollit amet exercitation nulla do anim minim laboris et. Ex id est cupidatat deserunt cupidatat occaecat Lorem sit cillum sit nostrud culpa est proident. Et mollit occaecat commodo reprehenderit anim nostrud Lorem do occaecat duis. Eu ullamco qui deserunt anim sit labore aliqua dolor dolore eiusmod in anim ipsum sint. Ad non esse in in minim.
+
+    """

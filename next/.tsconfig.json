@@ -1,0 +1,60 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "lib": [
+      "esnext",
+      "es2019.array",
+      "es2019.symbol",
+      "es2018.asynciterable",
+      "esnext.intl",
+      "es2020.bigint",
+      "es2021.string",
+      "es2021.promise",
+      "es2021.weakref",
+      "dom",
+      "dom.iterable",
+      "webworker",
+      "webworker.importscripts",
+      "webworker.iterable"
+    ],
+    "module": "esnext",
+    "allowUmdGlobalAccess": true,
+    "checkJs": true,
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "./dist",
+    "removeComments": true,
+    "importHelpers": true,
+    "importsNotUsedAsValues": "remove",
+    "emitBOM": true,
+    "newLine": "crlf",
+    "stripInternal": true,
+    "declarationDir": "./declare",
+    "isolatedModules": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "preserveSymlinks": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "noEmit": false,
+    "noEmitOnError": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "jsx": "react",
+    "allowJs": true,
+    "moduleResolution": "node"
+  },
+  "files": [
+    "./src/index.ts"
+  ],
+  "include": [
+    "./src/**/*.ts"
+  ],
+  "exclude": [
+    "./dist/"
+  ]
+}

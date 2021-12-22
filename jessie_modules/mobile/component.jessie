@@ -1,5 +1,4 @@
 !config.virtual_better_look true
 
-    span << Ahmad Asy SyafiQ
 
-    div cstyle=background-color:#151515;width:120px;height:120px;color:#fff; #container .box .skyblue << HELLO WORLD!
+-- width <= 640

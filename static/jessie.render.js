@@ -2,10 +2,12 @@
     sk: skulluglify
 */
 
+if (typeof self == "undefined") self = globalThis;
+
 import { skQueryManager, ElementTrace } from "./jessie.js";
 import { Package } from "./jessie.package.js";
 
-globalThis.package = Package;
+self.package = Package;
 
 let q = new skQueryManager;
 let $ = q.Query;
@@ -26,6 +28,8 @@ export class Render extends Object {
         this.nodups = new Array;
 
         this.defaultLocalePath = "";
+
+        this.enableCache = false;
     }
 
     usePipeline(pipeline) {
@@ -41,7 +45,10 @@ export class Render extends Object {
 
             if (!has_initialized) {
                 
+                this.pipelines.splice(0,0,this.parseVirtualElementQueryPerLine);
                 this.pipelines.splice(0,0,this.parseBetterLookQueryPerLine);
+                this.pipelines.splice(0,0,this.parseSourceGetEmbedPerLine);
+                this.pipelines.splice(0,0,this.parseTextCollectorPerLine);
                 this.pipelines.splice(0,0,this.parseIncludeFilePerLine);
                 this.pipelines.splice(0,0,this.parseConfigVirtualAuto);
                 this.pipelines.splice(0,0,this.parseNoDuplicateAuto);
@@ -59,7 +66,7 @@ export class Render extends Object {
 
     _get_source(src) {
 
-        if (src.startsWith("http:")) {
+        if (/^https?\:\/\//i.test(src)) {
 
             // pass
 
@@ -73,12 +80,12 @@ export class Render extends Object {
              * pkg:
              */
 
-            src = src.substr("mo:".length, src.length);
+            src = src.substring("mo:".length, src.length);
             src = this.path.join("./jessie_modules/", src);
         
         } else if (src.startsWith("pkg:")) {
 
-            src = src.substr("pkg:".length, src.length);
+            src = src.substring("pkg:".length, src.length);
             src = this.path.join("./jessie_modules/", src);
         
         } else {
@@ -93,7 +100,7 @@ export class Render extends Object {
             }
         }
 
-        if (!["jessie", "mjs", "js", "css", "txt"].includes(this.path.basename(src).split(".").pop())) {
+        if (this.path.basename(src).split(".").length < 2) {
 
             src = this.path.simplify(this.path.join(src, "component.jessie"));
         }
@@ -101,7 +108,7 @@ export class Render extends Object {
         return src;
     }
 
-    _split_shl(context) {
+    _split_once(context, key = "<", count = 2) {
 
         let arrayList = new Array;
 
@@ -117,12 +124,12 @@ export class Render extends Object {
 
             let puts = data[i];
 
-            if (puts == "<") {
+            if (puts == key) {
 
                 _shl += 1;
                 _shl_index = i;
 
-                if (_shl == 2) break;
+                if (_shl == count) break;
             }
 
             _shl = 0;
@@ -130,24 +137,43 @@ export class Render extends Object {
 
         if (_shl_index > 0) {
 
-            arrayList.push(context.substr(0,_shl_index -1));
-            arrayList.push(context.substr(_shl_index +1, context.length));
+            arrayList.push(context.substring(0,_shl_index - (count - 1)));
+            arrayList.push(context.substring(_shl_index + 1, context.length));
 
         } else {
 
             arrayList.push(context);
         }
 
-        return arrayList;
+        return arrayList.map((t) => q.unSpaceText(t));
     }
 
     async _fetch_auto_cache(input, init) {
 
-        let key = input.replaceAll("/", "_").replaceAll(".", "_");
+        let key = input.replace(/(\/|\.)/g, "_");
 
-        let sizeStorage = await navigator.storage.estimate();
-        let sizeLimitCache = 150 * 1e3;
-        let sizeLimitCacheLength = Math.floor(sizeStorage.quota / sizeLimitCache);
+        let sizeStorage;
+        let sizeLimitCache;
+        let sizeLimitCacheLength;
+
+        sizeStorage = null;
+        
+        sizeLimitCache = 0;
+        sizeLimitCacheLength = 0;
+        
+        if (typeof StorageManager == "object") {
+
+            if (StorageManager?.prototype) {
+    
+                if (StorageManager.prototype.isPrototypeOf(navigator?.storage)) {
+    
+    
+                    sizeStorage = await navigator.storage.estimate();
+                    sizeLimitCache = 150 * 1e3;
+                    sizeLimitCacheLength = Math.floor(sizeStorage.quota / sizeLimitCache);
+                }            
+            }
+        }
 
         let dataLocal = localStorage.getItem(key);
 
@@ -161,7 +187,7 @@ export class Render extends Object {
 
             if (sizeFile <= sizeLimitCache && localStorage.length <= sizeLimitCacheLength) {
     
-                localStorage.setItem(key, context);
+                if (this.enableCache) localStorage.setItem(key, context);
             }
     
             return context;
@@ -175,6 +201,11 @@ export class Render extends Object {
         this.defaultLocalePath = src;
     }
 
+    setEnableCache(enable) {
+
+        this.enableCache = enable;
+    }
+
     async eval(context) {
 
         let obj, start, wait;
@@ -184,14 +215,25 @@ export class Render extends Object {
 
         let defaultLocalePath = `${this.defaultLocalePath}`; // copy string
 
-        obj.virtualConfig = {};
+        obj.virtualConfig = new Object;
+
+        // add local
+        obj.local = new Object;
 
         obj.imports = async function __import__ (src) {
 
             let render = new Render;
             render.setDefaultLocalePath(defaultLocalePath);
+            
+            return await render._fetch_auto_cache(render._get_source(src));
+        }
+        
+        obj.getUrl = function __getUrl__ (src) {
+            
+            let render = new Render;
+            render.setDefaultLocalePath(defaultLocalePath);
 
-            return render._fetch_auto_cache(render._get_source(src));
+            return render.path.join(self.location.origin, render._get_source(src));
         }
         
         obj.document = new DocumentFragment;
@@ -205,6 +247,8 @@ export class Render extends Object {
         // obj.document.append(obj.document.body);
 
         obj.element = new DocumentFragment;
+        obj.virtual_documents = new Array;
+        obj.virtual_parent = null;
         obj.parent = obj.element;
         obj.currentElement = obj.parent;
         
@@ -260,6 +304,7 @@ export class Render extends Object {
 
         return {
 
+            virtuals: obj.virtual_documents,
             document: obj.document,
             element: obj.element,
             selectors: obj.selectors,
@@ -278,6 +323,8 @@ export class Render extends Object {
 
         let context = await this._fetch_auto_cache(src);
         let data = await this.eval(context);
+
+        self.virtuals = data.virtuals;
 
         document.body.append(data.element);
 
@@ -345,11 +392,11 @@ export class Render extends Object {
                 
                 if (obj.caches.startsWith(INCLUDE_HEADER)) {
 
-                    obj.caches = obj.caches.substr(INCLUDE_HEADER.length, obj.caches.length);
+                    obj.caches = obj.caches.substring(INCLUDE_HEADER.length, obj.caches.length);
                 
                 } else if (obj.caches.startsWith(IMPORT_HEADER)) {
                     
-                    obj.caches = obj.caches.substr(IMPORT_HEADER.length, obj.caches.length);
+                    obj.caches = obj.caches.substring(IMPORT_HEADER.length, obj.caches.length);
 
                 } else {
 
@@ -442,29 +489,45 @@ export class Render extends Object {
     
                         data = data?.data || {};
 
-                        obj.parent.append(data.element);
+                        obj.currentElement.append(data.element);
                         
                         Array.from(data.document.head.children).forEach((element) => {
                             
                             data.document.head.remove(element);
                             obj.document.head.append(element);
+
                         });
                         
                         Array.from(data.document.body.children).forEach((element) => {
 
                             data.document.body.remove(element);
                             obj.document.body.append(element);
+
+                        });
+
+                        data.virtuals.forEach((virtual_document) => {
+
+                            obj.virtual_documents.push(virtual_document);
+
                         });
                         
                         data.selectors.forEach((selector) => {
     
                             obj.selectors.push(selector);
+
                         })
 
                         data.nodups.forEach((selector) => {
     
                             obj.nodups.push(selector);
+
                         })
+
+                        delete data.virtuals;
+                        // delete data.document;
+                        // delete data.element;
+                        delete data.selectors;
+                        delete data.nodups;
                     })
                 }
 
@@ -476,17 +539,196 @@ export class Render extends Object {
         }.bind(this))
     }
 
+    get parseTextCollectorPerLine() {
+
+        let EOF_HEADER = "EOF";
+
+        let tabs;
+        let text;
+        let caches;
+        let collectorMode;
+
+        tabs = 0;
+        text = "";
+        caches = "";
+
+        collectorMode = false;
+
+        let __cache__ = async (obj) => {
+
+            if (obj.caches.includes(">>")) {
+
+                let concept = this._split_once(obj.caches, ">", 2);
+
+                if (2 <= concept.length) {
+
+                    if (concept[1] == EOF_HEADER) {
+
+                        caches = concept[0];
+                        collectorMode = true;
+                        tabs = obj.tabs;
+                        caches += "<<";
+                        return false;
+
+                    } else {
+
+                        // is not EOF protocol
+                    }
+                }
+
+                if (concept.length > 2) {
+
+                    console.warn("out of concept using EOF!");
+                }
+            };
+
+            if (obj.caches.startsWith(EOF_HEADER) && tabs == obj.tabs) {
+                
+                collectorMode = false;
+                obj.caches = caches;
+                caches = "";
+                tabs = 0;
+            }
+            
+            if (!!collectorMode) {
+
+                if (tabs < obj.tabs) {
+                    
+                    caches += obj.caches + "\\n";
+                
+                } else {
+
+                    console.warn("multiple text outside safe zone!");
+                }
+                return false;
+            }
+
+            return true;
+        };
+
+        return (__cache__).bind(this);
+    }
+
+    get parseSourceGetEmbedPerLine() {
+
+        let SOURCE_SET_HEADER = "source-set";
+        let SOURCE_GET_HEADER = "source-get";
+
+        let virtualBetterLook = false;
+
+        let params = new Array;
+
+        let name, url, type;
+        
+        name = "";
+        url = "";
+        type = "";
+
+        let __cache__ = async (obj) => {
+
+            // source-set name url mimetype
+            // source-get url mimetype
+
+            if (virtualBetterLook) {
+
+                if (typeof obj.virtualConfig?.virtual_better_look == "boolean") {
+
+                    obj.virtualConfig.virtual_better_look = virtualBetterLook;
+                    virtualBetterLook = false;
+                }
+            }
+
+            if (obj.caches.startsWith(SOURCE_SET_HEADER)) {
+
+                obj.caches = obj.caches.substring(SOURCE_SET_HEADER.length, obj.caches.length);
+                
+                params = q.unQuote(obj.caches, " ", true, false);
+
+                name = params.shift() || "";
+                url = params.shift() || "";
+                type = params.shift() || "";
+
+                if (name.length > 0) {
+
+                    name = "." + name;
+                }
+
+                if (url.length > 0) {
+
+                    url = this._get_source(url);
+                    url = `src="${url}"`;
+
+                } else {
+
+                    return false;
+                }
+
+                if (type.length > 0) {
+
+                    type = `type="${type}"`;
+                    type = "&" + type;
+                }
+
+                obj.caches = `source[${url}${type}].jessie-get-source${name}`;
+
+                if (obj.virtualConfig?.virtual_better_look) {
+
+                    virtualBetterLook = obj.virtualConfig?.virtual_better_look;
+                    obj.virtualConfig.virtual_better_look = false;
+                }
+                
+            } else
+            if (obj.caches.startsWith(SOURCE_GET_HEADER)) {
+                
+                obj.caches = obj.caches.substring(SOURCE_GET_HEADER.length, obj.caches.length);
+                
+                params = q.unQuote(obj.caches, " ", true, false);
+
+                url = params.shift() || "";
+                type = params.shift() || "";
+
+                if (url.length > 0) {
+
+                    url = this._get_source(url);
+                    url = `src="${url}"`;
+
+                } else {
+
+                    return false;
+                }
+
+                if (type.length > 0) {
+
+                    type = `type="${type}"`;
+                    type = "&" + type;
+                }
+
+                obj.caches = `source[${url}${type}].jessie-get-source`;
+
+                if (obj.virtualConfig?.virtual_better_look) {
+
+                    virtualBetterLook = obj.virtualConfig?.virtual_better_look;
+                    obj.virtualConfig.virtual_better_look = false;
+                }
+            }
+
+            return true;
+        };
+
+        return (__cache__).bind(this);
+    }
+
     get parseBetterLookQueryPerLine() {
 
-        let _split_shl = this._split_shl;
+        let _split_once = this._split_once;
 
         return async function __cache__(obj) {
 
             if (obj.virtualConfig?.virtual_better_look) {
 
-                let concept = _split_shl(obj.caches);
+                let concept = _split_once(obj.caches);
 
-                let selector = q.unSpaceText(concept.shift());
+                let selector = concept.shift();
 
                 let nodeName = "";
                 let nodeAttributes = new Array;
@@ -494,9 +736,9 @@ export class Render extends Object {
                 let nodeId = "";
                 let nodeClassLists = new Array;
 
-                let dataTrace = selector.split(" ");
+                let dataTrace = q.unQuote(selector, " ", true, true);
 
-                nodeName = dataTrace.shift();
+                let virtual_elements = new Array;
 
                 dataTrace.forEach((value) => {
 
@@ -511,8 +753,13 @@ export class Render extends Object {
                     else if (value.startsWith(".")) {
 
                         nodeClassLists.push(value);
+                    } else {
+
+                        virtual_elements.push(value);
                     }
                 })
+
+                nodeName = virtual_elements.join(" ");
 
                 let attributes = "";
                 let classLists = "";
@@ -522,22 +769,143 @@ export class Render extends Object {
                     attributes = `[${nodeAttributes.join("&")}]`;
                 }
 
-                if (nodeId.length > 0) {
+                // if (nodeId.length > 0) {
 
-                    nodeId = "#" + nodeId;
-                }
+                //     nodeId = "#" + nodeId;
+                // }
 
                 if (nodeClassLists.length > 0) {
 
-                    classLists = `.${nodeClassLists.join(".")}`;
+                    classLists = `${nodeClassLists.join("")}`;
                 }
 
                 obj.caches = `${nodeName}${attributes}${nodeId}${classLists}`;
 
                 if (concept.length > 0) {
 
-                    obj.caches += " <<" + concept.shift();
+                    obj.caches += "<<" + concept.shift();
                 }
+            }
+
+            return true;
+        }
+    }
+
+    get parseVirtualElementQueryPerLine() {
+
+        let _split_once = this._split_once
+
+        let tabs = 0;
+
+        let mtabs = new Array;
+
+        let in_virtual = false;
+        
+        let virtual_parent = null;
+
+        function __parse_cli_to_legit_element__(obj, cname, callback = null) {
+
+            if (obj.caches.startsWith(cname)) {
+
+                let concept = _split_once(obj.caches, " ", 1);
+
+                let virtual_cli, selectorText;
+
+                virtual_cli = concept.shift();
+
+                if (concept.length > 0) {
+
+                    selectorText = concept.shift();
+
+                    let [ selector, text ] = _split_once(selectorText);
+
+                    if (selector.length > 0) {
+                        
+                        if (!text) {
+    
+                            obj.caches = `${virtual_cli}[def="${selector}"]`;
+                        
+                        } else {
+                            
+                            obj.caches = `${virtual_cli}[def="${selector}"] << ${text}`;
+    
+                        }
+                    } else {
+
+                        obj.caches = `${virtual_cli} << ${text}`;
+                    }
+                
+                } else {
+
+                    obj.caches = virtual_cli;
+                }
+
+                if (callback && typeof callback == "function") {
+
+                    return callback(obj);
+                }
+            }
+            return null;
+        }
+
+        function __clear_var__(obj) {
+
+            tabs = 0;
+            mtabs = new Array;
+            in_virtual = false;
+            virtual_parent = null;
+            obj.virtual_parent = null;
+
+        }
+
+        return async function __cache__(obj) {
+
+            if (obj.virtualConfig?.virtual_node) {
+
+                if (in_virtual) {
+    
+                    if (obj.caches.startsWith("virtualend")) {
+                            
+                        __clear_var__(obj);
+                        
+                        console.log("virtual has stopped!");
+    
+                        // stop pipeline
+                        return false;
+                    }
+    
+                    if (obj.tabs == tabs) {
+    
+                        __clear_var__(obj);
+                        
+                        console.log("virtual has stopped!");
+    
+                        // pass pipeline
+                    
+                    } else {
+    
+                        // __parse_cli_to_legit_element__(obj, "remove");
+                        __parse_cli_to_legit_element__(obj, "parent");
+    
+                        // return false;
+                        // by passing
+                    }
+                }
+    
+                __parse_cli_to_legit_element__(obj, "virtual", (e) => {
+    
+                    tabs = obj.tabs;
+    
+                    in_virtual = true;
+    
+                    virtual_parent = new DocumentFragment;
+    
+                    console.log("virtual has created!");
+    
+                    obj.virtual_documents.push(virtual_parent);
+    
+                    obj.virtual_parent = virtual_parent;
+                })
             }
 
             return true;
@@ -567,7 +935,7 @@ export class Render extends Object {
 
             if (cache.startsWith(CONFIG_HEADER + dot)) {
 
-                cache = cache.substr(CONFIG_HEADER.length + 1, cache.length);
+                cache = cache.substring(CONFIG_HEADER.length + 1, cache.length);
 
                 let [configname, configvalue, ...ignored] = cache.split(" ");
 
@@ -593,13 +961,13 @@ export class Render extends Object {
         wrapQuote = false;
         caches = "";
 
-        let FN_HEADER = `"use strict"; let q, $, global, imports, doc, element; q = new this.skQueryManager; $ = q.Query; global = this.global; imports = this.imports; doc = this.document; element = this.element; return (async function sync() {\n`;
+        let FN_HEADER = `"use strict"; let q, $, global, local, imports, getUrl, element; q = new this.skQueryManager; $ = q.Query; global = this.global; local = this.local; imports = this.imports; getUrl = this.getUrl; element = this.element; return (async function sync() {\n`;
 
         let FN_CLOSED = "\n}).bind(this);";
 
         let binding = new Object;
 
-        binding.global = globalThis;
+        binding.global = self;
         binding.skQueryManager = skQueryManager;
         
         return async function __cache__(obj) {
@@ -647,9 +1015,11 @@ export class Render extends Object {
                             try {
 
                                 // auto refresh
-                                binding.document = obj.document;
+                                // binding.document = obj.document;
                                 binding.element = obj.currentElement;
                                 binding.imports = obj.imports;
+                                binding.getUrl = obj.getUrl;
+                                binding.local = obj.local;
                                 
                                 fnSync = new Function(`${FN_HEADER} return \`${contextJS}\` ${FN_CLOSED}`).bind(binding).call();
                             
@@ -727,9 +1097,11 @@ export class Render extends Object {
                         try {
 
                             // auto refresh
-                            binding.document = obj.document;
+                            // binding.document = obj.document;
                             binding.element = obj.currentElement;
                             binding.imports = obj.imports;
+                            binding.getUrl = obj.getUrl;
+                            binding.local = obj.local;
                             
                             if (["\[\%", "\{\%"].includes(doubleBrackets)) {
     
@@ -789,8 +1161,8 @@ export class Render extends Object {
 
     get parseQueryPerLine() {
 
-        let _split_shl, parent, concept, et, attrs, element, selectorText, elements, mtabs, tabs, text, x;
-        _split_shl = this._split_shl;
+        let _split_once, parent, concept, et, attrs, element, selectorText, elements, mtabs, tabs, text, x;
+        _split_once = this._split_once;
         parent = null;
         concept = new Array;
         et = null;
@@ -807,15 +1179,15 @@ export class Render extends Object {
 
             tabs = obj.tabs;
 
-            concept = _split_shl(obj.caches);
+            concept = _split_once(obj.caches);
 
             if (concept.length > 0) {
 
-                obj.caches = q.unSpaceText(concept.shift());
+                obj.caches = concept.shift();
 
                 if (concept.length > 0) {
     
-                    text = q.unSpaceText(concept.shift());
+                    text = concept.shift();
                 }
             }
 
@@ -872,7 +1244,7 @@ export class Render extends Object {
             }
 
             if (text.length > 0) {
-                et.html = text;
+                et.html = text.replace(/\\n/g, "\n");
                 text = "";
             }
             
@@ -883,7 +1255,7 @@ export class Render extends Object {
             for (let t of mtabs) {
                 if (t < tabs) {
                     
-                    obj.tabs = tabs;
+                    // obj.tabs = tabs;
                     m = m +1;
                     continue;
                 } else 
@@ -901,6 +1273,13 @@ export class Render extends Object {
                 elements = new Array;
                 parent = obj.element;
                 obj.parent = parent;
+
+                // virtual state ...
+                if (obj?.virtual_parent != null) {
+
+                    parent = obj.virtual_parent;
+                    obj.parent = obj.virtual_parent;
+                }
                 
                 elements.push(element);
                 x = elements.length -1;
@@ -933,10 +1312,11 @@ export class Render extends Object {
                     x = mtabs.indexOf(tabs);
                     elements[x] = element;
                     element = elements[x];
+                    let chains = elements[x -1];
 
                     obj.currentElement = element;
 
-                    elements[x -1].append(element);
+                    chains.append(element);
                 }
             }
 

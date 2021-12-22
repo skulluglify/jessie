@@ -1,0 +1,33 @@
+!config.virtual_node true
+!config.virtual_better_look true
+
+    span << Ahmad Asy SyafiQ
+
+    div cstyle=background-color:#151515;width:120px;height:120px;color:#fff; #container .box .skyblue << HELLO WORLD!
+
+    virtual div .skyblue
+
+        [[
+
+            console.log(element)
+        ]]
+
+        remove
+        
+            div .small .union
+
+        parent span << can read in virtual element
+        
+        parent 
+
+            div style=background-color:limegreen; 
+
+            remove div .skyblue*
+    
+    virtualend
+
+    span >> EOF
+
+    EOF
+
+    span << ... \n ...

@@ -1,0 +1,67 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "lib": [
+        "esnext",
+        "esnext.array",
+        "esnext.symbol",
+        "esnext.asynciterable",
+        "esnext.intl",
+        "esnext.bigint",
+        "esnext.string",
+        "esnext.promise",
+        "esnext.weakref",
+        "dom",
+        "dom.iterable",
+        "webworker",
+        "webworker.importscripts",
+        "webworker.iterable"
+    ],
+    "module": "esnext",
+    "allowUmdGlobalAccess": true,
+    "checkJs": true,
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "./dist",
+    "rootDirs": [
+      "./node_modules",
+      "./src"
+    ],
+    "resolveJsonModule": true,
+    "removeComments": true,
+    "importHelpers": true,
+    "importsNotUsedAsValues": "remove",
+    "emitBOM": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "newLine": "crlf",
+    "stripInternal": true,
+    "declarationDir": "./declare",
+    "isolatedModules": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "preserveSymlinks": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "noEmit": false,
+    "noEmitOnError": true,
+    "noImplicitAny": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "jsx": "react",
+    "allowJs": true,
+    "moduleResolution": "node"
+  },
+  "files": [
+    "./src/index.ts"
+  ],
+  "include": [
+    "./src/**/*.ts",
+    "./src/**/*.tsx"
+  ],
+  "exclude": [
+    "./dist/"
+  ]
+}

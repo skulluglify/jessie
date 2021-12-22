@@ -1,0 +1,10 @@
+.exams
+.exams/*
+declare/*
+dist/*
+.tsconfig.js
+node_modules
+node_modules/*
+bower_components
+bower_components/*
+package-lock.json

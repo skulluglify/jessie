@@ -3,6 +3,8 @@
  * support webpack requires
  */
 
+if (typeof self == "undefined") self = globalThis;
+
 class _Posix_Path extends Object {
 
     constructor(...args) {
@@ -133,7 +135,7 @@ export class Package extends Object{
         return (async function include_file(src) {
             let context = "", obj = new Object;
             try {
-                if ("__webpack_require__" in globalThis) {
+                if ("__webpack_require__" in self) {
                     if (__webpack_require__ && typeof __webpack_require__ == "function") {
                         src = this.path.join(this.path.__WEBPACK_DEFAULT_ROOT_PATH__, this.path.simplify(src));
                         context = __webpack_require__(src);
@@ -142,7 +144,7 @@ export class Package extends Object{
                         throw `Could't Handle this file ${src}`;
                     }
                 } else
-                if ("__webpack_modules__" in globalThis) {
+                if ("__webpack_modules__" in self) {
                     if (__webpack_modules__ && typeof __webpack_modules__ == "object") {
                         src = this.path.join(this.path.__WEBPACK_DEFAULT_ROOT_PATH__, this.path.simplify(src));
                         if (src in __webpack_modules__) __webpack_modules__[src](obj);

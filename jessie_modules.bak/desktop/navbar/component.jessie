@@ -1,0 +1,39 @@
+
+
+import "./index.mjs"
+import "./index.js"
+import "./index.css"
+
+include "mobile"
+
+        div[cstyle="""
+            
+            background-color: limegreen;
+            width: 180px;
+            height: 180px;
+            overflow: hidden;
+            backdrop-filter: blur(12px);
+
+        """].ComponentClass
+
+            button[text=" dont click me! "]#alert
+
+                [[
+
+                    console.log(imports("./lorem.txt"))
+
+                    $(element).on("click", (e) => {
+
+                        console.log(e);
+
+                        alert("hallo world!");
+                    })
+
+                    console.log($(element));
+                ]]
+
+
+            span << Hallo World!
+
+            include "./lorem.txt"
+

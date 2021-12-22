@@ -2,6 +2,8 @@
     sk: skulluglify
 */
 
+if (typeof self == "undefined") self = globalThis;
+
 export class skQueryEvent extends Event {
 
     constructor() {
@@ -32,11 +34,65 @@ export class DOMTokenListTrace extends Array {
 
     }
 
-    add(...tokens) { }
-    remove(...tokens) { }
-    contains(token) { }
-    entries() { arguments } // Array Iterator
-    get value() { }
+    add(...tokens) { 
+
+        for (let i = 0; i < tokens.length; i++) {
+
+            let token = tokens[i];
+            if (!this.includes(token)) this.push(token);
+        }
+    }
+    
+    remove(...tokens) { 
+
+        for (let i = 0; i < tokens.length; i++) {
+
+            let token = tokens[i];
+            if (this.includes(token)) this.splice(this.indexOf(token), 1);
+        }
+    }
+    
+    contains(token) { 
+
+        return this.includes(token);
+    }
+
+    replace(token, newToken) {
+
+        if (this.includes(token)) {
+
+            this.splice(this.indexOf(token), 1, newToken);
+        }
+    }
+
+    toggle(token, force = null) {
+
+        // force?
+        if (force == null) {
+
+            force = !this.contains(token);
+        }
+
+        if (force) {
+    
+            this.add(token);
+        
+        } else {
+            
+            this.remove(token);
+    
+        }
+
+        return force;
+    }
+
+    // entries() { arguments } // Array Iterator
+    get value() { 
+
+        if (this.length > 0) return this.join(" ");
+
+        return "";
+    }
 }
 
 export class ElementTrace extends Object {
@@ -85,7 +141,7 @@ export class skQuery extends EventTarget {
         let returns;
         return function () {
             if (fn) {
-                returns = fn.apply(this || context, arguments);
+                returns = fn.apply(this || context, ...arguments);
                 fn = null;
             }
             return returns;
@@ -96,7 +152,7 @@ export class skQuery extends EventTarget {
         let returns;
         return function () {
             if (fn && document.readyState == "complete") {
-                returns = fn.apply(this || context, arguments);
+                returns = fn.apply(this || context, ...arguments);
                 fn = null;
             }
             return returns;
@@ -253,45 +309,155 @@ export class skQuery extends EventTarget {
 
     createSelectorText(elementTrace) {
 
-        let nodeName = elementTrace?.nodeName || "";
-        let nodeId = elementTrace?.id || "";
-        let nodeClassLists = Array.from(elementTrace?.classList || []);
-        let nodeAttributes = elementTrace?.attributes || {};
-        let nodeAttributeKeys = Object.keys(nodeAttributes);
+        if (elementTrace && typeof elementTrace == "object" && !this.isArray(elementTrace)) {
+            if (ElementTrace.prototype.isPrototypeOf(elementTrace)) {
 
-        let attributes = "";
+                let nodeName = elementTrace?.nodeName || "";
+                let nodeId = elementTrace?.id || "";
+                let nodeClassLists = Array.from(elementTrace?.classList || []);
+                let nodeAttributes = elementTrace?.attributes || {};
+                let nodeAttributeKeys = Object.keys(nodeAttributes);
 
-        nodeClassLists = nodeClassLists.join(".");
-
-        if (nodeClassLists.length > 0) {
-
-            nodeClassLists = "." + nodeClassLists;
-        }
+                let text = elementTrace?.text || "";
         
-        if (nodeId.length > 0) {
-
-            nodeId = `#${nodeId}`;
-        }
-
-        nodeName = nodeName.toLowerCase();
-
-        if (nodeAttributeKeys.length > 0) {
-
-            attributes = nodeAttributeKeys.map((key) => {
-    
-                let attr = nodeAttributes[key];
-                if (attr.length > 0) {
-                    return `${key}=${nodeAttributes[key]}`;
+                let attributes = "";
+                let classLists = "";
+        
+                nodeClassLists = nodeClassLists.join(".");
+        
+                if (nodeClassLists.length > 0) {
+        
+                    classLists = "." + nodeClassLists;
                 }
-    
-                return key;
-    
-            }).join("&")
+                
+                if (nodeId.length > 0) {
+        
+                    nodeId = "#" + nodeId;
+                }
+        
+                nodeName = nodeName.toLowerCase();
+        
+                if (nodeAttributeKeys.length > 0) {
+        
+                    attributes = nodeAttributeKeys.map((key) => {
+            
+                        let attr = nodeAttributes[key];
 
-            attributes = `[${attributes}]`;
+                        if (attr.length > 0) {
+
+                            attr = attr.replaceAll(" ", "");
+
+                            return `${key}=${attr}`;
+                        
+                        }
+            
+                        return key;
+            
+                    }).join("&");
+        
+                    attributes = `[${attributes}]`;
+                }
+        
+                if (text.length > 0) {
+
+                    return `${nodeName}${attributes}${nodeId}${classLists} << ${text}`;
+                
+                } else {
+                    
+                    return `${nodeName}${attributes}${nodeId}${classLists}`;
+                }
+
+            } else
+            if (Element.prototype.isPrototypeOf(elementTrace)) {
+
+                let element = elementTrace;
+
+                let nodeName = element.nodeName.toLowerCase();
+
+                let n = element.attributes.length;
+
+                let nodeId = "";
+                let nodeClassLists = new Array;
+
+                let nodeAttributes = new Array;
+
+                let text = element.textContent;
+
+                for (let i = 0; i < n; i++) {
+
+                    let attribute = element.attributes[i];
+
+                    switch (attribute.name) {
+
+                        case "id":
+
+                            nodeId = attribute.value;
+                            break;
+                        
+                        case "class":
+
+                            attribute.value.split(" ").forEach((cls) => {
+
+                                nodeClassLists.push(cls);
+                            })
+
+                            break;
+                        
+                        default:
+
+                            nodeAttributes.push([
+
+                                attribute.name, attribute.value
+                            ]);
+
+                            break;
+                    }
+                }
+
+                let attributes = nodeAttributes.map((attr) => {
+
+                    let [ key, value ] = attr;
+                    
+                    value = value.replaceAll(" ", "");
+
+                    return `${key}=${value}`;
+
+                }).join("&");
+
+                let classLists = nodeClassLists.join(".");
+
+                if (attributes.length > 0) {
+
+                    attributes = `[${attributes}]`;
+                }
+
+                if (classLists.length > 0) {
+
+                    classLists = "." + classLists;
+                }
+
+                if (nodeId.length > 0) {
+
+                    nodeId = "#" + nodeId;
+                }
+
+                if (text.length > 0) {
+
+                    return `${nodeName}${attributes}${nodeId}${classLists} << ${text}`;
+                
+                } else {
+                    
+                    return `${nodeName}${attributes}${nodeId}${classLists}`;
+                }
+            }
         }
 
-        return `${nodeName}${attributes}${nodeId}${nodeClassLists}`
+        return "";
+    }
+
+    similarly_elements(a, b) {
+
+        return this.createSelectorText(a) == this.createSelectorText(b);
     }
 
     // ex: let [ elementTrace, context ] = q.createQuery("div[style=background-color: limegreen; width: 20%; height: 20%; margin: 4%;]#test.smallGroup.union", false);
@@ -496,6 +662,13 @@ export class skQuery extends EventTarget {
         return [obj, context];
     }
 
+    parseBool(check = null) {
+
+        if (!(check && typeof check == "string")) return null;
+
+        return ["true", "1", "!0"].includes(check) ? true : (["false", "0", "!1"].includes(check) ? false : null);
+    }
+
     parseQueries(queries) {
 
         const target = this.target || document;
@@ -581,7 +754,7 @@ export class skQuery extends EventTarget {
         return null;
     }
 
-    class(...cls) {
+    classList(...cls) {
 
         const target = this.target || document?.body;
         const skQueryClone = skQuery;
@@ -589,7 +762,7 @@ export class skQuery extends EventTarget {
 
         if (cls.length > 0) {
             if (target) {
-                if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).class(...cls));
+                if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).classList(...cls));
                 cls.forEach((c => {
                     if (!target?.classList?.contains(c)) target?.classList?.add(c);
                 }).bind(this));
@@ -598,7 +771,7 @@ export class skQuery extends EventTarget {
         return target?.classList;
     }
 
-    classRemove(...cls) {
+    classListRemove(...cls) {
 
         const target = this.target || document?.body;
         const skQueryClone = skQuery;
@@ -606,7 +779,7 @@ export class skQuery extends EventTarget {
 
         if (cls.length > 0) {
             if (target) {
-                if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).classRemove(...cls));
+                if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).classListRemove(...cls));
                 cls.forEach((c => {
                     if (target?.classList?.contains(c)) target?.classList?.remove(c);
                 }).bind(this));
@@ -641,18 +814,34 @@ export class skQuery extends EventTarget {
                 if (puts == " ") continue;
                 test += puts;
             }
+
             if (!isarray) {
+            
                 if (!isregex ? transform && !test?.startsWith(ignore) : transform && !ignore?.test(test)) {
+            
                     caches += (!caches ? transform : " " + transform) + "\)";
+            
                 }
+            
             } else {
+            
                 continues = false;
+            
                 ignore?.forEach((e => {
+            
                     if (!this.isRegex(e) ? transform && test?.startsWith(e) : transform && e?.test(test)) {
+            
                         continues = true;
+            
                     }
+            
                 }).bind(this));
-                if (!continues) caches += (!caches ? transform : " " + transform) + "\)";
+            
+                if (!continues) {
+                    
+                    caches += (!caches ? transform : " " + transform) + "\)";
+                
+                }
             }
 
         }).bind(this));
@@ -670,7 +859,9 @@ export class skQuery extends EventTarget {
         const isarray = this.isArray(target);
 
         if (target) {
+            
             if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).rotate(degrees));
+            
             if ("style" in target) target.style.transform = `rotate(${degrees})${transforms ? " " + transforms : ''}`;
         }
 
@@ -688,7 +879,9 @@ export class skQuery extends EventTarget {
         const isarray = this.isArray(target);
 
         if (target) {
+            
             if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).scale(w, h));
+            
             if ("style" in target) target.style.transform = `scale(${w}, ${h})${transforms ? " " + transforms : ''}`;
         }
 
@@ -707,6 +900,7 @@ export class skQuery extends EventTarget {
         const isarray = this.isArray(target);
 
         if (target) {
+            
             if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).translate(x, y));
             // if ("style" in target) target.style.transform = `translate(${x}, ${y})${transforms? " " + transforms : ''}`;
             this.translateX(x);
@@ -727,7 +921,9 @@ export class skQuery extends EventTarget {
         const isarray = this.isArray(target);
 
         if (target) {
+            
             if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).translateX(x));
+            
             if ("style" in target) target.style.transform = `translateX(${x})${transforms ? " " + transforms : ''}`;
         }
 
@@ -745,7 +941,9 @@ export class skQuery extends EventTarget {
         const isarray = this.isArray(target);
 
         if (target) {
+            
             if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).translateY(y));
+            
             if ("style" in target) target.style.transform = `translateY(${y})${transforms ? " " + transforms : ''}`;
         }
 
@@ -761,7 +959,9 @@ export class skQuery extends EventTarget {
         const isarray = this.isArray(target);
 
         if (target) {
+            
             if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).borderRadius(value));
+            
             if ("style" in target) {
 
                 target.style.borderTopLeftRadius = value;
@@ -773,6 +973,88 @@ export class skQuery extends EventTarget {
         }
 
         return value;
+    }
+
+    textSize(value) {
+
+        if (typeof value == "number") value = `${value}px`;
+
+        const target = this.target || document?.body;
+        const skQueryClone = skQuery;
+        const isarray = this.isArray(target);
+
+        if (target) {
+            
+            if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).textSize(value));
+            
+            if ("style" in target) {
+
+                target.style.fontSize = value;
+
+            }
+        }
+
+        return value;
+    }
+
+    append(element) {
+
+        if (element && typeof element == "object") {
+
+            element = element?.target || element;
+        }
+
+        if (!Element.prototype.isPrototypeOf(element)) return null;
+
+        const target = this.target || document?.body;
+        const skQueryClone = skQuery;
+        const isarray = this.isArray(target);
+
+        if (element && typeof element == "object" && Element.prototype.isPrototypeOf(element)) {
+
+            if (target) {
+                
+                if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).append(element.cloneNode()));
+                
+                target.append(element);
+            }
+        }
+
+        return null;
+    }
+
+    remove(element) {
+
+        if (element && typeof element == "object") {
+
+            element = element?.target || element;
+        }
+
+        if (!Element.prototype.isPrototypeOf(element)) return null;
+
+        const target = this.target || document?.body;
+        const skQueryClone = skQuery;
+        const isarray = this.isArray(target);
+
+        if (element && typeof element == "object" && Element.prototype.isPrototypeOf(element)) {
+
+            if (target) {
+                
+                if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).remove(element));
+
+                for (let childElement of Array.from(target.children)) {
+
+                    // if (Element.prototype.isPrototypeOf(childElement))
+                    if (this.similarly_elements(childElement, element)) {
+
+                        childElement.remove();
+                        break;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     toCircle() {
@@ -814,7 +1096,7 @@ export class skQuery extends EventTarget {
         return target?.style?.display || display;
     }
 
-    on(type, listener, options = true) {
+    on(type, callback, options = true) {
 
         const target = this.target || document?.body;
         const skQueryClone = skQuery;
@@ -822,21 +1104,254 @@ export class skQuery extends EventTarget {
 
         if (target && type && typeof type == "string") {
 
-            if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).on(type, listener, options));
+            if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).on(type, callback, options));
 
             let listen = false;
             // save current listeners
             if (!(this.isArray(target?.__listeners__))) target.__listeners__ = new Array;
-            if (!(target?.__listeners__.includes(listener))) {
-                target.__listeners__.push(listener);
+            if (!(target?.__listeners__.includes(callback))) {
+                target.__listeners__.push(callback);
                 listen = true;
             }
 
-            if (typeof listener == "function" && listen) target.addEventListener(type, listener, options)
+            if (typeof callback == "function" && listen) {
+            
+                target.addEventListener(type, callback, options);
+            
+            }
 
         }
 
         return options;
+    }
+
+    hover(obj, options = true) {
+
+        const target = this.target || document?.body;
+        const skQueryClone = skQuery;
+        const isarray = this.isArray(target);
+
+        if (target && obj && !this.isArray(obj)) {
+
+            if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).hover(obj));
+
+            let listen = false;
+            // save current listeners
+            if (!(this.isArray(target?.__hover_listeners__))) target.__hover_listeners__ = new Array;
+            if (!(target?.__hover_listeners__.includes(obj))) {
+                target.__hover_listeners__.push(obj);
+                listen = true;
+            }
+
+            let focus = obj?.focus || null;
+            let leave = null;
+
+            function __focus__() {
+
+                return function __wrapper__(e) {
+
+                    if (focus && !leave) {
+
+                        if (obj?.focus && typeof obj.focus == "function") obj.focus.bind(this, ...arguments).call(e);
+                        leave = obj?.leave || null;
+                        setTimeout(() => {
+
+                            focus = null;
+
+                            // leave for limit time
+                            __leave__()(e);
+
+                        }, 100);
+                    
+                    }
+                }
+            }
+
+
+            function __leave__() {
+
+                return function __wrapper__(e) {
+
+                    if (leave && !focus) {
+
+                        if (obj?.leave && typeof obj.leave == "function") obj.leave.bind(this, ...arguments).call(e);
+                        focus = obj?.focus || null;
+                        setTimeout(() => {
+
+                            leave = null;
+
+                        }, 100);
+                        
+                    }
+                }
+            }
+
+            if (obj?.focus && typeof obj.focus == "function") {
+                    
+                if (target?.ontouchstart) {
+
+                    target.addEventListener("touchstart", __focus__(), true);
+                }
+
+                target.addEventListener("mouseover", __focus__(), true);
+                
+            }
+            
+            
+            if (obj?.leave && typeof obj.leave == "function") {
+
+                if (target?.ontouchend) {
+
+                    target.addEventListener("touchend", __leave__(), true);
+                }
+
+                target.addEventListener("mouseleave", __leave__(), true);
+            }
+
+        }
+
+        return null;
+    }
+
+    getSource(selector = null) {
+
+        if (!selector) selector = "source";
+
+        selector += ".jessie-get-source";
+
+        let target = this.target || document?.body;
+        const skQueryClone = skQuery;
+        const isarray = this.isArray(target);
+
+        if (!Element.prototype.isPrototypeOf(target)) {
+
+            if (!Window.prototype.isPrototypeOf(target)) return null;
+        };
+
+        if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).getSource(selector));
+
+        target = target?.target || target;
+
+        let sourceElement = target.querySelector(selector);
+
+        if (Element.prototype.isPrototypeOf(sourceElement)) {
+
+            return {
+                src: sourceElement.attributes?.src?.value || null,
+                type: sourceElement.attributes?.type?.value || null
+            }
+        }
+
+        return null;
+    }
+
+    getSourceAll(selector = null) {
+
+        if (!selector) selector = "source.jessie-get-source";
+
+        selector += ".jessie-get-source";
+
+        let target = this.target || document?.body;
+        const skQueryClone = skQuery;
+        const isarray = this.isArray(target);
+
+        if (!Element.prototype.isPrototypeOf(target)) {
+
+            if (!Window.prototype.isPrototypeOf(target)) return null;
+        };
+
+        if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).getSource(selector));
+
+        target = target?.target || target;
+
+        let sourceElements = Array.from(target.querySelectorAll(selector));
+
+        let sourceList = sourceElements.map((element) => {
+
+            if (Element.prototype.isPrototypeOf(element)) {
+
+                return {
+                    src: element.attributes?.src?.value || null,
+                    type: element.attributes?.type?.value || null
+                }
+            }
+    
+            return null;
+        });
+
+        return sourceList || null;
+    }
+
+    resize(callback) {
+
+        const target = this.target || document?.body;
+        const skQueryClone = skQuery;
+        const isarray = this.isArray(target);
+
+        if (!Element.prototype.isPrototypeOf(target)) {
+
+            if (!Window.prototype.isPrototypeOf(target)) return null;
+        };
+
+        if (isarray) return target.map(t => (new skQueryClone(t?.target || t)).resize(callback));
+
+        let query = (p) => new skQueryClone(p?.target || p);
+
+        let wrapper = (() => {
+
+            let point = {};
+            let percent = {};
+
+            let vw = 0;
+            let vh = 0;
+
+            return ((e, callback) => {
+
+                let body = document?.body || null;
+
+                if (!body) return null;
+
+                let cw = body.clientWidth;
+                let ch = body.clientHeight;
+
+                if (vw < cw) vw = cw;
+                if (vh < ch) vh = ch;
+
+                percent.w = cw / vw;
+                percent.h = ch / vh;
+
+                point.vw = vw;
+                point.vh = vh;
+                point.cw = cw;
+                point.ch = ch;
+                point.percent = percent;
+                point.pointer = e;
+                
+                if (callback && typeof callback == "function") {
+
+                    callback(point);
+                }
+
+            }).bind(this);
+        }).bind(this);
+
+        let wp = wrapper();
+
+        let main = (e) => {
+
+
+            if (callback && typeof callback == "function") {
+
+                wp(e, callback);
+
+            }
+
+            return null;
+        };
+
+        query(target).on("resize", main);
+
+        return main(null);
     }
 
     removeEvent(type, listener, options) {
@@ -856,7 +1371,46 @@ export class skQuery extends EventTarget {
                 listen = false;
             }
 
-            if (typeof listener == "function" && !listen) target.removeEventListener(type, listener, options)
+            if (["hover:focus", "hover:leave"].includes(type)) {
+
+                // __hover_listeners__
+
+                // obj.focus obj.leave
+
+                listen = false;
+            }
+
+            if (typeof listener == "function" && !listen) {
+                
+                if (["hover:focus", "hover:leave"].includes(type)) {
+
+                    if (type == "hover:focus") {
+
+                        if (target?.ontouchstart) {
+
+                            target.removeEventListener("touchstart", listener, true);
+                        }
+
+                        target.removeEventListener("mouseover", listener, true);
+                    }
+
+                    if (type == "hover:leave") {
+
+                        if (target?.ontouchend) {
+
+                            target.removeEventListener("touchend", listener, true);
+                        }
+                        
+                        target.removeEventListener("mouseleave", listener, true);
+                    }
+                    
+
+                } else {
+
+                    target.removeEventListener(type, listener, options);
+                }
+            
+            }
 
         }
 
@@ -1008,7 +1562,7 @@ export class skBytes extends Object {
 
     decode(contexts, radix = 16) {
 
-        if (globalThis?.parseInt && globalThis?.parseInt?.length > 1) return parseInt(contexts, radix);
+        if (window?.parseInt && window?.parseInt?.length > 1) return parseInt(contexts, radix);
 
         if (contexts && Array.isArray(contexts)) {
 

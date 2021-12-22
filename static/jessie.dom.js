@@ -1,5 +1,7 @@
 import { skQueryManager } from "./jessie.js";
 
+if (typeof self == "undefined") self = globalThis;
+
 let q = new skQueryManager;
 let $ = q.Query;
 
@@ -9,8 +11,8 @@ class TextStreamElement extends HTMLElement {
 
         super();
 
-        globalThis.tt = this;
         this.shadow = this.attachShadow({ mode: "open" });
+        
     }
 
     connectedCallback() {
