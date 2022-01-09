@@ -1,11 +1,169 @@
+// setting configure by
+// rules
+// start lines executions
+// continuous without skipping / null
+
+!config
+!config.virtual_look_better true
+!config.virtual_element true
+
+// no more setting configure again
+
+
+// decorator
+// new utilities
+
+@virtual // create element in new DocumentFragment
+@template // keep syntax text in main executions
+
+@skipping // skipping parsing or other module before executions
+@prevent  // prevent
+
+@virtual def=VIRTUAL_ELEMENT
+div.this_is_template
+
+	span >> EOF
+		it hidden from source
+	EOF
+
+@template def=TEMPLATE_ELEMENT
+div.this_is_template
+
+	span >> EOF
+		it hidden from source
+	EOF
+
+// how replacement, just only take this define text
+
+TEMPLATE_ELEMENT // auto re copy-paste template text
+
+@skipping.jsparse
+
+/*
+
+deprecated
+
+[[  ]]
+[%  %]
+{%  %}
+
+move upto
+
+-- auto commit quotes if round space in the context
+
+/foo/bar/file
+
+"/foo/bar/main\ file"
+
+{{ local.property }} -- just only single line authorization
+
+	div .mainClass src={{ getURL("./images/logo.png") }}
+
+auto return
+
+[[
+	// tabs
+]]
+
+no return
+
+javascriptParseAuto
+
+re - define
+
+{{  }} -- just single line
+
+[[
+	-- multi line - but lock in min tabs
+	--
+	--
+	--
+]]
+
+remove
+
+span << """
 
 
 
+"""
+
+change up to
+
+span >> EOF
+	-- multi line - but lock in min tabs
+	--
+	--
+EOF
+
+re - parsing if EOF module 
+
+auto detect if it paragraph
+
+span >> EOF
+
+	| <-->Ad sunt enim et elit ad ad occaecat. Esse e
+	| Ad sunt enim et elit ad ad occaecat. Esse elit 
+	| Sint non nisi elit fugiat tempor Lorem
+	|
+	| // more spacing
+	|
+	|     dolore. Sint non nisi elit fugiat tempor Lo
+	| reprehenderit do dolore. Sint non nisi elit fug
+	| ad occaecat. Esse elit esse reprehenderit do do
 
 
+EOF
+
+skipping \n with \
+
+if this is styling
+
+auto detected space in css rules, and allowed using more space
+
+div .mainClass style=\ // skipping \n continuous in the next line
+        background-color: skyblue;\ // break detected length of tabs 
+        margin: 0;\
+        padding: 0;
 
 
+commit -- // /**/
 
+fix commit 
+
+div .mainClass // this is commit, in the last section
+div .mainClass -- this is commit, in the last section
+div .mainClass /* this is commit, anywhere */ style=margin:0;
+
+unQuote iterable, iterator, continuous
+unSpaceText
+
+parseCustomQueryElement
+default using, !config.virtual_better_look true
+
+
+configure
+!config.
+
+decorator
+@skipping
+@template
+
+
+Builder
+Bundler
+makeConfigure
+makeVirtualFunction
+
+
+C++
+to make compile get faster
+
+.jessie --> .js --> .html
+
+re build, re compile, re write
+
+*/
 
 
 // nodup name="NV_MAIN_COMPONENT_H"
