@@ -1,0 +1,1 @@
+const TOML = require("toml"); const opl = require("./opl.js"); module.exports = { default: opl(TOML.parse) }

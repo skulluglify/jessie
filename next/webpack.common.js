@@ -1,6 +1,4 @@
 const PATH = require("path");
-const TOML = require.resolve("toml");
-const YAML = require.resolve("yaml");
 
 module.exports = {
 
@@ -51,21 +49,21 @@ module.exports = {
         test: /\.toml$/i,
         type: "javascript/auto",
         use: [
-          require.resolve("./opl/toml.js")
+          require.resolve("./tools/toml.js")
         ]
       },
       {
         test: /\.yaml$/i,
         type: "javascript/auto",
         use: [
-          require.resolve("./opl/yaml.js")
+          require.resolve("./tools/yaml.js")
         ]
       },
       {
         test: /\.json$/i,
         type: "javascript/auto",
         use: [
-          require.resolve("./opl/json.js")
+          require.resolve("./tools/json.js")
         ]
       }
     ]

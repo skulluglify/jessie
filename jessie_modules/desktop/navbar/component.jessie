@@ -1,8 +1,24 @@
 !config.virtual_better_look true
 
+include "cssbuiltin/anim"
 include "./index.css"
 
 [[
+
+    local.check_is_mobile = /(android|i?phone|i?watch|mobile)/i.test(navigator.userAgent.toLowerCase());
+
+    local.direct_view_page = (function direct_view_page(view) {
+
+        if (local.check_is_mobile) {
+
+            window.open(`viewport.html?view=${view}`)
+        
+        } else {
+
+            window.open(`index.html?view=${view}`)
+
+        }
+    });
 
     local.navbar_box_css = q.unSpaceText(`
 
@@ -41,7 +57,7 @@ include "./index.css"
     
 ]]
 
-div .navbar
+div .navbar style=font-family:roboto_condensedbold;
 
     div cstyle={% local.navbar_box_css %} .box .center .sfx_hit_button
 
@@ -49,9 +65,11 @@ div .navbar
 
             $(element).hover(local.navbar_box_hover(element));
 
+            // none direct
+
         ]]
 
-        img src={%getUrl("./img/admin.x80.png")%}
+        img src={%getUrl("./img/admin.x80.png")%} .anim-fade-up .anim-1s
 
     div .box .center .sfx_hit_button
 
@@ -59,9 +77,14 @@ div .navbar
 
             $(element).hover(local.navbar_box_hover(element));
 
+            $(element).on("click", () => {
+
+                local.direct_view_page("home");
+            });
+
         ]]
 
-        span << Home
+        span .anim-fade-up .anim-2s << Home
     
     div .box .center .sfx_hit_button
 
@@ -69,9 +92,14 @@ div .navbar
 
             $(element).hover(local.navbar_box_hover(element));
 
+            $(element).on("click", () => {
+
+                local.direct_view_page("about");
+            });
+
         ]]
 
-        span << About
+        span  .anim-fade-up .anim-3s << About
 
     div .box .center .sfx_hit_button
 
@@ -79,9 +107,14 @@ div .navbar
 
             $(element).hover(local.navbar_box_hover(element));
 
+            $(element).on("click", () => {
+
+                local.direct_view_page("blog");
+            });
+
         ]]
 
-        span << Blog
+        span .anim-fade-up .anim-4s << Blog
 
     div .box .center .sfx_hit_button
 
@@ -89,9 +122,14 @@ div .navbar
 
             $(element).hover(local.navbar_box_hover(element));
 
+            $(element).on("click", () => {
+
+                local.direct_view_page("service");
+            });
+
         ]]
 
-        span << Service
+        span .anim-fade-up .anim-5s << Service
 
     div .box .center .sfx_hit_button
 
@@ -99,6 +137,11 @@ div .navbar
 
             $(element).hover(local.navbar_box_hover(element));
 
+            $(element).on("click", () => {
+
+                local.direct_view_page("contact");
+            });
+
         ]]
 
-        span << Contact
+        span .anim-fade-up .anim-6s << Contact

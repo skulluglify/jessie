@@ -1,0 +1,1 @@
+const YAML = require("yaml"); const opl = require("./opl.js"); module.exports = { default: opl(YAML.parse) }

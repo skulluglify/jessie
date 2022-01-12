@@ -1,0 +1,1 @@
+const opl = require("./opl.js"); module.exports = { default: opl(JSON.parse) }

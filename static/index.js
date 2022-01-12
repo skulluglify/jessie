@@ -21,36 +21,72 @@ q.QueueMainActivity.enqueue(function __queue__() {
     (async function() {
 
         let check_is_viewport = q.parseUrlSearch(location.search)?.viewport || null;
+        let direct_view_page = q.parseUrlSearch(location.search)?.view || null;
 
         let check_is_mobile = /(android|i?phone|i?watch|mobile)/i.test(navigator.userAgent.toLowerCase());
 
-        if (check_is_mobile) {
+        async function renderView (view, defaultView = "home") {
 
-            if (check_is_viewport != "yes") {
+            if (check_is_mobile) {
 
-                let pre = $("!pre");
-
-                pre = pre?.target || pre;
-
-                pre.style.whiteSpace = "pre-wrap"
-
-                pre.textContent = "webpage has been move into viewport.html, click me! to open up!";
-
-                $("body").append(pre);
-
-                $("body").on("click", () => {
-
-                    self.open(`${location.origin}/viewport.html`);
-                });
-                // throw `should change viewport!`;
+                if (check_is_viewport != "yes") {
+    
+                    let pre = $("!pre");
+    
+                    pre = pre?.target || pre;
+    
+                    pre.style.whiteSpace = "pre-wrap"
+    
+                    pre.textContent = "webpage has been move into viewport.html, click me! to open up!";
+    
+                    $("body").append(pre);
+    
+                    $("body").on("click", () => {
+    
+                        self.open(`${location.origin}/viewport.html?view=${defaultView}`);
+                    });
+                    // throw `should change viewport!`;
+                } else {
+    
+                    await r.renderJessieAuto(view);
+                }
             } else {
+                
+                await r.renderJessieAuto(view);
+            } 
+        }
 
-                await r.renderJessieAuto("desktop");
-            }
-        } else {
+        switch (direct_view_page) {
+            case "home":
+                
+                renderView("desktop")
+                break
+
+            case "about":
             
-            await r.renderJessieAuto("desktop");
-        } 
+                renderView("desktop/about.jessie")
+                break
+
+            case "blog":
+        
+                renderView("desktop/blog.jessie")
+                break
+
+            case "service":
+    
+                renderView("desktop/service.jessie")
+                break
+
+            case "contact":
+
+                renderView("desktop/contact.jessie")
+                break
+        
+            default:
+
+                renderView("desktop")
+                break
+        }
 
         // $("div.skyblue").target.append(s.target);
 
