@@ -23,11 +23,11 @@ module.exports = {
       bugfixes: true,
       targets: {
         esmodules: true,
-        node: "current",
-        browsers: "last 2 Chrome versions"
+        node: "current"
+        // browsers: "last 2 Chrome versions"
       },
       forceAllTransforms: true,
-      modules: false
+      modules: "commonjs"
     }
   ]
 };

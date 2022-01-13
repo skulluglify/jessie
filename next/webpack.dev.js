@@ -1,7 +1,5 @@
 const { merge } = require('webpack-merge');
 const common = require('./webpack.common.js');
-const TOML = require.resolve("toml");
-const YAML = require.resolve("yaml");
 
 module.exports = merge(common, {
   mode: "development",

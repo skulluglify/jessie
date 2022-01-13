@@ -7,13 +7,25 @@ if [ ! -d node_modules ]; then
   npm install --loglevel silent
 fi
 
-if [ -n "$(ls declare)" ]; then
+if [ ! -d declare/ ]; then
+
+  mkdir declare/
+fi
+
+if [ -n "$(ls declare/)" ]; then
 
   rm -rf declare/*
 
 fi
 
-if [ -n "$(ls dist)" ]; then
+if [ ! -d dist/ ]; then
+
+  mkdir dist/
+fi
+
+cp -r index.html dist/
+
+if [ -n "$(ls dist/)" ]; then
 
   rm -rf dist/*
 

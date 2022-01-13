@@ -8,3 +8,8 @@ Object.defineProperty(globalThis, "skMathPolyfills", {
     enumerable: false,
     configurable: false
 })
+
+export default {
+
+    skMathPolyfills: new skMathPolyfills
+}
