@@ -7,6 +7,12 @@ if [ ! -d node_modules ]; then
   npm install --loglevel silent
 fi
 
+if [ -n "$(ls declare)" ]; then
+
+  rm -rf declare/*
+
+fi
+
 if [ -n "$(ls dist)" ]; then
 
   rm -rf dist/*
