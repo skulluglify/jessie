@@ -11,13 +11,21 @@ module.exports = {
   babel: [
     "@babel/preset-env",
     {
-      useBuiltIns: "usage",
-      shippedProposals: true,
-      corejs: {
-        version: "^3.20", 
-        proposals: true
+      // useBuiltIns: "usage",
+      useBuiltIns: false,
+      shippedProposals: false,
+      // corejs: {
+      //   version: "^3.20", 
+      //   proposals: true
+      // },
+      loose: true,
+      // targets: "> 0.25%, not dead",
+      bugfixes: true,
+      targets: {
+        esmodules: true,
+        node: "current",
+        browsers: "last 2 Chrome versions"
       },
-      targets: "> 0.25%, not dead",
       forceAllTransforms: true,
       modules: false
     }

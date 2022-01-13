@@ -26,4 +26,103 @@ export class skJessieDocumentModule implements IskJessieDocumentModule {
     }
 }
 
+class skJessieDocumentModuleTokenList extends Array<string> implements IskJessieDocumentModuleTokenList {
+    
+    [index: number]: string
+    
+    add(...tokens: Array<string>): void {
+        
+        let token: string
+
+        for (token of tokens) {
+
+            if (!this.includes(token)) {
+
+                this.push(token)
+            }
+
+        }
+    }
+    
+    contains(token: string): boolean {
+    
+        return this.includes(token)
+
+    }
+    
+    item(index: number): string | null {
+        
+        if (0 <= index && index < this.length) {
+
+            let value: string | undefined
+
+            value = this.at(index)
+
+            if (value) return value
+        }
+
+        return null
+
+    }
+    
+    remove(...tokens: Array<string>): void {
+        
+        let token: string
+
+        for (token of tokens) {
+
+            let index: number
+
+            index = this.indexOf(token)
+
+            if (0 <= index) {
+
+                this.splice(index, 1)
+            }
+
+        }
+
+    }
+    
+    replace(token: string, newToken: string): boolean {
+        
+        let index: number
+
+        index = this.indexOf(token)
+
+        if (0 <= index) {
+
+            this.splice(index, 1, newToken)
+            return true
+        }
+
+        return false
+
+    }
+    
+    supports(token: string): boolean {
+        throw new Error("Method not implemented.")
+    }
+    
+    toggle(token: string, force?: boolean): boolean {
+        throw new Error("Method not implemented.")
+    }
+    
+    entries(): IterableIterator<[number, string]> {
+        throw new Error("Method not implemented.")
+    }
+    
+    keys(): IterableIterator<number> {
+        throw new Error("Method not implemented.")
+    }
+    
+    values(): IterableIterator<string> {
+        throw new Error("Method not implemented.")
+    }
+    
+    [Symbol.iterator](): IterableIterator<string> {
+        throw new Error("Method not implemented.")
+    }
+}
+
 let skJessieElementStructure: IskJessieElementStructure;
