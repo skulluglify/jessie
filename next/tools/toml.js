@@ -1,1 +1,1 @@
-const TOML = require("toml"); const opl = require("./opl.js"); module.exports = { default: opl(TOML.parse) }
+"use strict";if("object"==typeof module&&"function"==typeof require){const e=require("toml"),o=require("./opl.js");module.exports={default:o(e.parse)}}

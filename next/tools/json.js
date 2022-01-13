@@ -1,1 +1,1 @@
-const opl = require("./opl.js"); module.exports = { default: opl(JSON.parse) }
+"use strict";if("object"==typeof module&&"function"==typeof require){const e=require("./opl.js");module.exports={default:e(JSON.parse)}}
