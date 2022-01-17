@@ -7,12 +7,12 @@ export class skMathHelper extends Object implements IskMathHelper {
 
     degrees(radians: number): number {
 
-        return 180 / Math.PI * radians
+        return 180.0 / Math.PI * radians
     }
     
     radians(degrees: number): number {
     
-        return Math.PI / 180 * degrees
+        return Math.PI / 180.0 * degrees
     }
     
     sum(...n: Array<number>): number {
@@ -39,6 +39,13 @@ export default class skWebMath extends Object {
         super()
 
         let MathHelper: skMathHelper = new skMathHelper
+
+        Object.defineProperty(this, "helper", {
+            value: MathHelper,
+            configurable: true,
+            enumerable: true,
+            writable: false
+        })
 
         let MathHelperNames: Array<string> = [
 
