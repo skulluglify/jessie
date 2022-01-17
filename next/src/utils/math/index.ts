@@ -52,12 +52,13 @@ export default class skWebMath extends Object {
 
         for (let prop of MathHelperNames) {
 
-            if (!this.hasOwnProperty(prop)) {
+            if (!(prop in this)) {
                 Object.defineProperty(this, prop, {
                     get: () => MathHelper[prop],
                     set: (e: any) => null,
-                    configurable: false,
-                    enumerable: false
+                    configurable: true,
+                    enumerable: true,
+                    writable: false
                 })
             }
         }
