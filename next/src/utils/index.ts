@@ -1,35 +1,19 @@
 import "./skeletons"
+import skWebColor from "./colors"
+import skWebMath from "./math"
+import skString from "./strings"
 
-export class skMathPolyfills extends Object implements IskMathPolyfills {
 
-    constructor() {
+Object.defineProperty(global, "skWebMath", {
+	get: () => new skWebMath,
+	set: (e: any) => null,
+	configurable: true,
+	enumerable: true
+})
 
-        super()
-    }
-
-    degrees(radians: number): number {
-
-        return 180 / Math.PI * radians
-    }
-    
-    radians(degrees: number): number {
-    
-        return Math.PI / 180 * degrees
-    }
-    
-    sum(...n: Array<number>): number {
-
-        if (n.length == 0) return 0
-
-        if (n.length == 1) return n[0]
-
-        let [ a, ...b ]: Array<number> = n
-
-        return a + this.sum(...b)
-    }
-    
-    hypot(...x: Array<number>): number {
-    
-        return Math.sqrt(this.sum(...x))
-    }
-}
+Object.defineProperty(global, "skWebColor", {
+	get: () => new skWebColor,
+	set: (e: any) => null,
+	configurable: true,
+	enumerable: true
+})
