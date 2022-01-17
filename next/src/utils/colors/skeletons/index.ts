@@ -14,9 +14,12 @@ interface IskWebColorHueSaturationLightness {
     hue: number
     saturation: number
     lightness: number
+    alpha: number
+    setAlpha(alpha: number): IskWebColorHueSaturationLightness
     toString(): string
     toHSV(): IskWebColorHueSaturationValue
     toRGB(): IskWebColorRGB
+    toHex(): string
 }
 
 interface IskWebColorHueSaturationValue {
@@ -24,9 +27,12 @@ interface IskWebColorHueSaturationValue {
     hue: number
     saturation: number
     value: number
+    alpha: number
+    setAlpha(alpha: number): IskWebColorHueSaturationValue
     toString(): string
     toHSL(): IskWebColorHueSaturationLightness
     toRGB(): IskWebColorRGB
+    toHex(): string
 }
 
 interface IskWebColorRGB {
@@ -34,9 +40,12 @@ interface IskWebColorRGB {
     red: number
     green: number
     blue: number
+    alpha: number
+    setAlpha(alpha: number): IskWebColorRGB
     toString(): string
     toHSL(): IskWebColorHueSaturationLightness
     toHSV(): IskWebColorHueSaturationValue
+    toHex(): string
 }
 
 interface IskWebColor {
