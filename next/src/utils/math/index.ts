@@ -28,7 +28,7 @@ export class skMathHelper extends Object implements IskMathHelper {
     
     hypot(...x: Array<number>): number {
     
-        return Math.sqrt(this.sum(...x.map((n: number) => Math.pow(n, 2))))
+        return Math.sqrt(this.sum(...x.map((n: number): number => Math.pow(n, 2))))
     }
 }
 
