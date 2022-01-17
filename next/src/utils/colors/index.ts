@@ -147,6 +147,7 @@ export class skWebColorHueSaturationLightness extends Object implements IskWebCo
 
     toHex(): string {
 
+        let a: number
         let WebColorFormater: skWebColorFormatter = new skWebColorFormatter
 
         let [ r, g, b ]: Array<number> = WebColorFormater.hsl2rgb(this.hue,this.saturation,this.lightness)
@@ -154,6 +155,7 @@ export class skWebColorHueSaturationLightness extends Object implements IskWebCo
         r = Math.min(Math.floor(r * 256), 255)
         g = Math.min(Math.floor(g * 256), 255)
         b = Math.min(Math.floor(b * 256), 255)
+        a = Math.min(Math.floor(this.alpha * 256), 255)
 
         let stringMap: IskStringMap = new skStringMap
         let array: Array<number> = new Array
@@ -161,6 +163,7 @@ export class skWebColorHueSaturationLightness extends Object implements IskWebCo
         array.push(r)
         array.push(g)
         array.push(b)
+        if (this.alpha < 1) array.push(a)
 
         return "\#" + array.map((e: number): string => {
 
@@ -226,6 +229,7 @@ export class skWebColorHueSaturationValue extends Object implements IskWebColorH
 
     toHex(): string {
 
+        let a: number
         let WebColorFormater: skWebColorFormatter = new skWebColorFormatter
 
         let [ r, g, b ]: Array<number> = WebColorFormater.hsv2rgb(this.hue,this.saturation,this.value)
@@ -233,6 +237,7 @@ export class skWebColorHueSaturationValue extends Object implements IskWebColorH
         r = Math.min(Math.floor(r * 256), 255)
         g = Math.min(Math.floor(g * 256), 255)
         b = Math.min(Math.floor(b * 256), 255)
+        a = Math.min(Math.floor(this.alpha * 256), 255)
 
         let stringMap: IskStringMap = new skStringMap
         let array: Array<number> = new Array
@@ -240,6 +245,7 @@ export class skWebColorHueSaturationValue extends Object implements IskWebColorH
         array.push(r)
         array.push(g)
         array.push(b)
+        if (this.alpha < 1) array.push(a)
 
         return "\#" + array.map((e: number): string => {
 
@@ -304,7 +310,7 @@ export class skWebColorRGB extends Object implements IskWebColorRGB {
 
     toHex(): string {
 
-        let r: number, g: number, b: number
+        let r: number, g: number, b: number, a: number
 
         r = this.red
         g = this.green
@@ -313,6 +319,7 @@ export class skWebColorRGB extends Object implements IskWebColorRGB {
         r = Math.min(Math.floor(r * 256), 255)
         g = Math.min(Math.floor(g * 256), 255)
         b = Math.min(Math.floor(b * 256), 255)
+        a = Math.min(Math.floor(this.alpha * 256), 255)
 
         let stringMap: IskStringMap = new skStringMap
         let array: Array<number> = new Array
@@ -320,6 +327,7 @@ export class skWebColorRGB extends Object implements IskWebColorRGB {
         array.push(r)
         array.push(g)
         array.push(b)
+        if (this.alpha < 1) array.push(a)
 
         return "\#" + array.map((e: number): string => {
 
