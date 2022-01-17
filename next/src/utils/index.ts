@@ -5,16 +5,14 @@ import skString from "./strings"
 
 
 Object.defineProperty(global, "skWebMath", {
-	get: () => new skWebMath,
-	set: (e: any) => null,
+	value: new skWebMath,
 	configurable: true,
 	enumerable: true,
 	writable: false
 })
 
 Object.defineProperty(global, "skWebColor", {
-	get: () => new skWebColor,
-	set: (e: any) => null,
+	value: new skWebColor,
 	configurable: true,
 	enumerable: true,
 	writable: false
