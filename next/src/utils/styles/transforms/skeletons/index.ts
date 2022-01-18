@@ -20,6 +20,8 @@ interface IskWebStyleTransform {
     translateY: number
     translateZ: number
 
+    constructor: Function
+
     setRotateX(a: number): IskWebStyleTransform
     setRotateY(a: number): IskWebStyleTransform
     setRotateZ(a: number): IskWebStyleTransform
@@ -58,7 +60,7 @@ interface IskWebStyleTransform {
     setTranslate3D(tx: number, ty: number, tz: number): IskWebStyleTransform
 
     toString(): string
-    parseString(context: string): IskWebStyleTransform
+    parse(context: string): IskWebStyleTransform
 
     /*
     matrix()
