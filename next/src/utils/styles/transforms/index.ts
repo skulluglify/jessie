@@ -30,6 +30,11 @@ export class skWebStyleTransforms extends Object implements IskWebStyleTransform
         super()
     }
 
+    //?features
+    // getRotateX
+    // setRotateX
+    // delRotateX
+    
     setRotateX(a: number): IskWebStyleTransforms {
         
         this.rotateX = a
@@ -300,6 +305,21 @@ export class skWebStyleTransforms extends Object implements IskWebStyleTransform
                 if (c == ")" && isfun && r == 0) {
 
                     //!BUGS
+                    // ValueTyped.PIXEL
+                    // ValueTyped.CM
+                    // ValueTyped.MM
+                    // ValueTyped.Q // quarter-millimeters
+                    // ValueTyped.IN
+                    // ValueTyped.PT
+                    // ValueTyped.PC
+                    // ValueTyped.PERCENT // Relative // %
+                    // ValueTyped.EX
+                    // ValueTyped.CH
+                    // ValueTyped.EM
+                    // ValueTyped.REM
+                    // vh / vw / vmin / vmax
+                    // s / ms
+                    // deg / rad / grad / turn
                     // from matrix(12,f(12px,6px),12,20,2,4)
                     // to matrix(12,f(12px,6px),12,20,2)
                     // evaluate
@@ -415,7 +435,7 @@ export class skWebStyleTransforms extends Object implements IskWebStyleTransform
                 context = ""
             }
 
-            if (this.rotateX == 0 || this.rotateY == 0) {
+            if (this.rotateX == 0 && this.rotateY == 0) {
                 
                 if (this.rotateZ != 0) {
     
