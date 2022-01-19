@@ -367,3 +367,6 @@ export default class skWebColor extends Object implements IskWebColor {
         return new skWebColorFormatter
     }
 }
+
+// parseHex
+// parse

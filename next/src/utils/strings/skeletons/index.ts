@@ -11,4 +11,5 @@ interface IskStringMap {
 	get punctuation(): string
 	get whitespace(): string
 	get printable(): string
+	get alphabet(): string 
 }

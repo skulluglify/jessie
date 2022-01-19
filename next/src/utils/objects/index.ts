@@ -18,24 +18,34 @@ export class skWrapperChecker extends Object implements IskWrapperChecker {
         return !!o && typeof o == "object" && Array.isArray(o)
     }
 
+    // NUMBER TYPE
     static isNumber(o: any): boolean {
 
         return (!!o || "" + o == "0") && typeof o == "number"
     }
 
+    // NUMBER TYPE
     static isNaN(o: any): boolean {
 
-        return (!!o || "" + o == "0") && typeof o == "number" && Number.isNaN(o)
+        return this.isNumber(o) && Number.isNaN(o)
     }
 
+    // NUMBER TYPE
     static isInfinity(o: any): boolean {
 
-        return (!!o || "" + o == "0") && typeof o == "number" && !Number.isFinite(o)
+        return this.isNumber(o) && !Number.isFinite(o)
     }
 
+    // NUMBER TYPE
     static isNumeric(o: any): boolean {
 
-        return (!!o || "" + o == "0") && this.isNumber(o) && !this.isNaN(o) && !this.isInfinity(o)
+        return this.isNumber(o) && !this.isNaN(o) && !this.isInfinity(o)
+    }
+
+    // DEFINE TYPE
+    static isDefine(o: any): boolean {
+
+        return (!!o || typeof o != "undefined") || this.isNumber(o)
     }
 
     static isString(o: any): boolean {
@@ -53,20 +63,25 @@ export class skWrapperChecker extends Object implements IskWrapperChecker {
         return !!o && typeof o == "symbol"
     }
 
+    static isFunction(o: any): boolean {
+
+        return !!o && typeof o == "function" && Function.prototype.isPrototypeOf(o)
+    }
+
     static isMap(o: any): boolean {
 
-        return !!o && this.isObject(o) && Map.prototype.isPrototypeOf(o)
+        return this.isObject(o) && Map.prototype.isPrototypeOf(o)
     }
 
     static isSet(o: any): boolean {
 
-        return !!o && this.isObject(o) && Set.prototype.isPrototypeOf(o)
+        return this.isObject(o) && Set.prototype.isPrototypeOf(o)
     }
 }
 
-export class skObjectWrapper extends Object implements IskObjectWrapper {
+export class skObjectWrapper<T, U> extends Object implements IskObjectWrapper<T, U> {
 
-    constructor(o?: object | undefined) {
+    constructor(o?: object) {
 
         super()
 
@@ -75,7 +90,7 @@ export class skObjectWrapper extends Object implements IskObjectWrapper {
 
     get(key: string): any {
 
-        let map: Array<[string, any]>
+        let map: IskObjectWrapperTypes
 
         map = Object.entries(this)
 
@@ -93,13 +108,13 @@ export class skObjectWrapper extends Object implements IskObjectWrapper {
         return null
     }
 
-    contains(value: string): boolean {
+    contains(keyOrValue: any): boolean {
 
-        if (!!value) {
+        if (skWrapperChecker.isDefine(keyOrValue)) {
 
-            for (let v of Object.values(this)) {
+            for (let [ k, v ] of this) {
 
-                if (value == v) {
+                if ([ k, v ].includes(keyOrValue)) {
 
                     return true
                 }
@@ -128,9 +143,9 @@ export class skObjectWrapper extends Object implements IskObjectWrapper {
         })
     }
 
-    update(o: object | undefined) {
+    update(o: object) {
 
-        if (!!o && skWrapperChecker.isObject(o)) {
+        if (skWrapperChecker.isObject(o)) {
 
             for (let key of Object.keys(o)) {
     
@@ -139,11 +154,11 @@ export class skObjectWrapper extends Object implements IskObjectWrapper {
         }
     }
     
-    [Symbol.iterator](): Iterator<Array<[string, any]>> {
+    [Symbol.iterator](): Iterator<IskObjectWrapperTypes> {
 
-        let continuous: Iterator<Array<[string, any]>>
+        let continuous: Iterator<IskObjectWrapperTypes>
 
-        let map: Array<[string, any]>
+        let map: IskObjectWrapperTypes
 
         let index: number
         let size: number
@@ -157,7 +172,7 @@ export class skObjectWrapper extends Object implements IskObjectWrapper {
 
         continuous = {
 
-            next: (...args): IteratorResult<Array<[string, any]>, any> => {
+            next: (...args): IteratorResult<IskObjectWrapperTypes, any> => {
 
                 let result: IteratorResult<any>
 
@@ -182,7 +197,7 @@ export class skObjectWrapper extends Object implements IskObjectWrapper {
 
                 return result
             },
-            return: (value?: any): IteratorResult<Array<[string, any]>, any> => {
+            return: (value?: any): IteratorResult<IskObjectWrapperTypes, any> => {
 
                 let result: IteratorResult<any>
 
@@ -194,7 +209,7 @@ export class skObjectWrapper extends Object implements IskObjectWrapper {
 
                 return result
             },
-            throw: (e?: any): IteratorResult<Array<[string, any]>, any> => {
+            throw: (e?: any): IteratorResult<IskObjectWrapperTypes, any> => {
 
                 let result: IteratorResult<any>
 
@@ -213,13 +228,16 @@ export class skObjectWrapper extends Object implements IskObjectWrapper {
 
 }
 
-export class skArrayWrapper extends Array implements IskArrayWrapper {
+export class skArrayWrapper<T> extends Array implements IskArrayWrapper<T> {
 
-    constructor(o?: Array<any> | undefined) {
+    constructor(o?: Array<any>) {
 
         super()
 
-        if (!!o && skWrapperChecker.isArray(o)) this.update(o)
+        if (!!o && skWrapperChecker.isArray(o)) {
+
+            this.push(...o)
+        }
     }
 
     get(index: number): any {
@@ -234,7 +252,7 @@ export class skArrayWrapper extends Array implements IskArrayWrapper {
 
     contains(value: any): boolean {
         
-        return !!value && this.includes(value)
+        return skWrapperChecker.isDefine(value) && this.includes(value)
     }
     
     set(index: number, value: any): void {
@@ -251,9 +269,9 @@ export class skArrayWrapper extends Array implements IskArrayWrapper {
         }
     }
 
-    update(o: Array<any> | undefined) {
+    update(o: Array<any>) {
 
-        if (!!o && skWrapperChecker.isArray(o)) {
+        if (skWrapperChecker.isArray(o)) {
 
             for (let v of o) {
 
@@ -263,6 +281,21 @@ export class skArrayWrapper extends Array implements IskArrayWrapper {
                 }
             }
         }
+    }
+
+    empty(): boolean {
+        
+        return !(this.length > 0)
+    }
+
+    start(): any {
+
+        return this.length > 0 ? this.get(0) : null 
+    }
+
+    end(): any {
+
+        return this.length > 0 ? this.get(this.length - 1) : null 
     }
 }
 
@@ -278,12 +311,12 @@ export default class skWrapper extends Object implements IskWrapper {
         return skWrapperChecker
     }
 
-    get Object(): object | IskObjectWrapper {
+    get Object(): object | IskObjectWrapper<IskObjectWrapperTypeKey, any> {
 
         return skObjectWrapper
     }
 
-    get Array(): object | IskArrayWrapper {
+    get Array(): object | IskArrayWrapper<any> {
 
         return skArrayWrapper
     }

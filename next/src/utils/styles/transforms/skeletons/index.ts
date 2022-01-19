@@ -1,7 +1,8 @@
-interface IskWebStyleTransform {
+interface IskWebStyleTransforms {
 
-    matrix: Array<number>
-    matrix3d: Array<number>
+    matrix: IskArrayWrapper<number>
+    matrix3d: IskArrayWrapper<number>
+    rotate3d: IskArrayWrapper<number>
 
     perspective: number
 
@@ -22,45 +23,47 @@ interface IskWebStyleTransform {
 
     constructor: Function
 
-    setRotateX(a: number): IskWebStyleTransform
-    setRotateY(a: number): IskWebStyleTransform
-    setRotateZ(a: number): IskWebStyleTransform
+    setRotateX(a: number): IskWebStyleTransforms
+    setRotateY(a: number): IskWebStyleTransforms
+    setRotateZ(a: number): IskWebStyleTransforms
 
-    setScaleX(s: number): IskWebStyleTransform
-    setScaleY(s: number): IskWebStyleTransform
-    setScaleZ(s: number): IskWebStyleTransform
+    setScaleX(s: number): IskWebStyleTransforms
+    setScaleY(s: number): IskWebStyleTransforms
+    setScaleZ(s: number): IskWebStyleTransforms
 
-    setSkewX(a: number): IskWebStyleTransform
-    setSkewY(a: number): IskWebStyleTransform
+    setSkewX(a: number): IskWebStyleTransforms
+    setSkewY(a: number): IskWebStyleTransforms
 
-    setTranslateX(t: number): IskWebStyleTransform
-    setTranslateY(t: number): IskWebStyleTransform
-    setTranslateZ(t: number): IskWebStyleTransform
+    setTranslateX(t: number): IskWebStyleTransforms
+    setTranslateY(t: number): IskWebStyleTransforms
+    setTranslateZ(t: number): IskWebStyleTransforms
 
     // matrix(scaleX(), skewY(), skewX(), scaleY(), translateX(), translateY())
-    setMatrix(sx: number, ax: number, ay: number, sy: number, tx: number, ty: number): IskWebStyleTransform
+    setMatrix(sx: number, ax: number, ay: number, sy: number, tx: number, ty: number): IskWebStyleTransforms
     setMatrix3D(
         a1: number, b1: number, c1: number, d1: number,
         a2: number, b2: number, c2: number, d2: number,
         a3: number, b3: number, c3: number, d3: number,
         a4: number, b4: number, c4: number, d4: number
-    ): IskWebStyleTransform
+    ): IskWebStyleTransforms
     
-    setPerspective(d: number): IskWebStyleTransform
+    setPerspective(d: number): IskWebStyleTransforms
     
-    setRotate(a: number): IskWebStyleTransform
-    setRotate3D(x: number, y: number, z: number, a: number): IskWebStyleTransform
+    setRotate(a: number): IskWebStyleTransforms
+    setRotate3D(x: number, y: number, z: number, a: number): IskWebStyleTransforms
     
-    setScale(sx: number, sy: number): IskWebStyleTransform
-    setScale3D(sx: number, sy: number, sz: number): IskWebStyleTransform
+    setScale(sx: number, sy: number): IskWebStyleTransforms
+    setScale3D(sx: number, sy: number, sz: number): IskWebStyleTransforms
     
-    setSkew(ax: number, ay: number): IskWebStyleTransform
+    setSkew(ax: number, ay: number): IskWebStyleTransforms
     
-    setTranslate(tx: number, ty: number): IskWebStyleTransform
-    setTranslate3D(tx: number, ty: number, tz: number): IskWebStyleTransform
+    setTranslate(tx: number, ty: number): IskWebStyleTransforms
+    setTranslate3D(tx: number, ty: number, tz: number): IskWebStyleTransforms
 
+    get maps(): IskObjectWrapper<string | symbol, any>
+    parse(context: string): IskWebStyleTransforms
+    
     toString(): string
-    parse(context: string): IskWebStyleTransform
 
     /*
     matrix()

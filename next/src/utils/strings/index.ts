@@ -16,6 +16,7 @@ export class skStringMap extends Object implements IskStringMap {
 	get punctuation(): string { return "\!\"\#\$\%\&\\\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\[\\\\\]\^\_\`\{\|\}\~" }
 	get whitespace(): string { return " \\t\\n\\r\\x0b\\x0c" }
 	get printable(): string { return this.digits + this.ascii_lowercase + this.ascii_uppercase + this.punctuation + this.whitespace }
+	get alphabet(): string { return this.digits + this.ascii_lowercase + this.ascii_uppercase }
 
 }
 

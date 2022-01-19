@@ -31,3 +31,5 @@ if (!Number.hasOwnProperty("isFinite")) {
         writable: false
     })
 }
+// fibonacci
+// prime
