@@ -153,10 +153,71 @@ export class skObjectWrapper<T, U> extends Object implements IskObjectWrapper<T,
             }
         }
     }
-    
-    [Symbol.iterator](): Iterator<IskObjectWrapperTypes> {
 
-        let continuous: Iterator<IskObjectWrapperTypes>
+    remove(key: string): void {
+
+        if (this.hasOwnProperty(key)) {
+
+            delete this[key]
+        }
+    }
+
+    clear(): void {
+        
+        for (let k in this) {
+
+            this.remove(k)
+        }
+    }
+
+    equals(o: object): boolean {
+
+        let a: Array<string> = Object.keys(this)
+        let b: Array<string> = Object.keys(o)
+
+        if (a.length != b.length) return false
+
+        for (let v of a) {
+
+            if (!b.includes(v)) {
+
+                return false
+            }
+        }
+        
+        for (let [ k, v ] of this) {
+
+            if (!!k) {
+
+                if (k in o) {
+
+                    if (o[k] == v) {
+
+                        continue
+                    } else {
+
+                        return false
+                    }
+
+                } else {
+
+                    return false
+                }
+            }
+        }
+
+        return true
+    }
+
+    stack(o: object): void {
+        
+        this.clear()
+        if (!!o && skWrapperChecker.isObject(o)) this.update(o)
+    }
+    
+    [Symbol.iterator](): Iterator<IskObjectWrapperType> {
+
+        let continuous: Iterator<IskObjectWrapperType>
 
         let map: IskObjectWrapperTypes
 
@@ -172,7 +233,7 @@ export class skObjectWrapper<T, U> extends Object implements IskObjectWrapper<T,
 
         continuous = {
 
-            next: (...args): IteratorResult<IskObjectWrapperTypes, any> => {
+            next: (...args): IteratorResult<IskObjectWrapperType, any> => {
 
                 let result: IteratorResult<any>
 
@@ -197,7 +258,7 @@ export class skObjectWrapper<T, U> extends Object implements IskObjectWrapper<T,
 
                 return result
             },
-            return: (value?: any): IteratorResult<IskObjectWrapperTypes, any> => {
+            return: (value?: any): IteratorResult<IskObjectWrapperType, any> => {
 
                 let result: IteratorResult<any>
 
@@ -209,7 +270,7 @@ export class skObjectWrapper<T, U> extends Object implements IskObjectWrapper<T,
 
                 return result
             },
-            throw: (e?: any): IteratorResult<IskObjectWrapperTypes, any> => {
+            throw: (e?: any): IteratorResult<IskObjectWrapperType, any> => {
 
                 let result: IteratorResult<any>
 
@@ -280,6 +341,51 @@ export class skArrayWrapper<T> extends Array implements IskArrayWrapper<T> {
                     this.push(v)
                 }
             }
+        }
+    }
+
+    clear(): void {
+        
+        // delete all
+        this.splice(0, this.length)
+    }
+
+    equals(o: Array<any>): boolean {
+        
+        let a: Array<any> = this
+        let b: Array<any> = o
+
+        if (a.length != b.length) return true
+
+        for (let v of a) {
+
+            if (!b.includes(v)) {
+
+                return false
+            }
+        }
+
+        return true
+    }
+
+    stack(o: Array<any>): void {
+        
+        this.clear()
+        if (!!o && skWrapperChecker.isArray(o)) {
+
+            // Auto Handler if size of array is Zero
+            for (let v of o) {
+    
+                this.push(v)
+            }
+        }
+    }
+
+    remove(value: string): void {
+
+        if (this.contains(value)) {
+
+            this.splice(this.indexOf(value), 1)
         }
     }
 

@@ -13,6 +13,8 @@
 
 type IskObjectWrapperTypes = Array<[string | symbol, any]>
 type IskObjectWrapperTypeKey = string | symbol
+type IskObjectWrapperTypeValue = any
+type IskObjectWrapperType = [string | symbol, any]
 
 interface IskWrapperChecker {
 
@@ -27,7 +29,11 @@ interface IskObjectWrapper<T, U> {
     set(key: string, value: any): void
     put(key: string, value: any): void
     update(o: object): void
-    [Symbol.iterator](): Iterator<IskObjectWrapperTypes>
+    equals(o: object): boolean
+    stack(o: object): void
+    remove(key: string): void
+    clear(): any
+    [Symbol.iterator](): Iterator<IskObjectWrapperType>
 }
 
 interface IskArrayWrapper<T> {
@@ -81,7 +87,11 @@ interface IskArrayWrapper<T> {
     contains(value: any): boolean
     set(index: number, value: any): void
     update(o: Array<any>): void
+    equals(o: Array<any>): boolean
+    stack(o: Array<any>): void
+    remove(value: string): void
     empty(): boolean
+    clear(): any
     start(): any
     end(): any
 }
