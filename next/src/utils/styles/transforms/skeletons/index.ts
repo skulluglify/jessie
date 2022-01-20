@@ -23,6 +23,8 @@ interface IskWebStyleTransforms {
 
     constructor: Function
 
+    clear(): void
+
     setRotateX(a: number): IskWebStyleTransforms
     setRotateY(a: number): IskWebStyleTransforms
     setRotateZ(a: number): IskWebStyleTransforms
@@ -64,6 +66,7 @@ interface IskWebStyleTransforms {
     parse(context: string): IskWebStyleTransforms
     
     toString(): string
+    toRelativeString(): string
 
     /*
     matrix()
