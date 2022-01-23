@@ -62,7 +62,7 @@ interface IskWebStyleTransforms {
     setTranslate(tx: number, ty: number): IskWebStyleTransforms
     setTranslate3D(tx: number, ty: number, tz: number): IskWebStyleTransforms
 
-    get maps(): IskObjectWrapper<string | symbol, any>
+    get maps(): IskObjectWrapper<any>
     parse(context: string): IskWebStyleTransforms
     
     toString(): string

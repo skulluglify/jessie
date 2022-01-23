@@ -3,7 +3,9 @@ import skWebColor from "./colors"
 import skWebMath from "./math"
 import skWrapper from "./objects"
 import skString from "./strings"
+
 import "./styles"
+import "./cvt"
 
 
 Object.defineProperty(global, "skWebMath", {

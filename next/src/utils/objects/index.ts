@@ -90,7 +90,7 @@ export class skObjectWrapper<T> extends Object implements IskObjectWrapper<T> {
 
     get(key: string): T | null {
 
-        let map: IskObjectWrapperTypes
+        let map: IskObjectWrapperTypes<T>
 
         map = Object.entries(this)
 
@@ -215,11 +215,11 @@ export class skObjectWrapper<T> extends Object implements IskObjectWrapper<T> {
         if (!!o && skWrapperChecker.isObject(o)) this.update(o)
     }
     
-    [Symbol.iterator](): Iterator<IskObjectWrapperType> {
+    [Symbol.iterator](): Iterator<IskObjectWrapperType<T>> {
 
-        let continuous: Iterator<IskObjectWrapperType>
+        let continuous: Iterator<IskObjectWrapperType<T>>
 
-        let map: IskObjectWrapperTypes
+        let map: IskObjectWrapperTypes<T>
 
         let index: number
         let size: number
@@ -233,7 +233,7 @@ export class skObjectWrapper<T> extends Object implements IskObjectWrapper<T> {
 
         continuous = {
 
-            next: (...args): IteratorResult<IskObjectWrapperType, any> => {
+            next: (...args): IteratorResult<IskObjectWrapperType<T>, any> => {
 
                 let result: IteratorResult<any>
 
@@ -258,7 +258,7 @@ export class skObjectWrapper<T> extends Object implements IskObjectWrapper<T> {
 
                 return result
             },
-            return: (value?: any): IteratorResult<IskObjectWrapperType, any> => {
+            return: (value?: any): IteratorResult<IskObjectWrapperType<T>, any> => {
 
                 let result: IteratorResult<any>
 
@@ -270,7 +270,7 @@ export class skObjectWrapper<T> extends Object implements IskObjectWrapper<T> {
 
                 return result
             },
-            throw: (e?: any): IteratorResult<IskObjectWrapperType, any> => {
+            throw: (e?: any): IteratorResult<IskObjectWrapperType<T>, any> => {
 
                 let result: IteratorResult<any>
 
@@ -417,7 +417,7 @@ export default class skWrapper extends Object implements IskWrapper {
         return skWrapperChecker
     }
 
-    get Object(): object | IskObjectWrapper<IskObjectWrapperTypeKey, any> {
+    get Object(): object | IskObjectWrapper<any> {
 
         return skObjectWrapper
     }

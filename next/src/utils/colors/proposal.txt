@@ -55,3 +55,23 @@ if (L > 1.0/2.0) Sl = C / 2 - 2 * L
 
 if (I == 0) Si = 0
 else Si = 1 - m / I
+
+hwb = hue, whiteness, and blackness
+lch = lab (CIE lightness), chroma, hue
+lab = CIE L * a * b * ColorSpace
+
+// full supported
+rbg() to hex
+rbga() to hex
+hsl()
+hsla()
+hsv()
+hsva()
+
+// not full
+hwb() to rgb
+hwba() to rgba
+
+// not supported
+lch()
+lab()
