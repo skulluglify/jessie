@@ -393,6 +393,12 @@ function shrbin(value: number, dist: number): number {
     return count
 }
 
+// shl shr
+/*
+MAX_ULONG = 2 ** 31 - 1
+MAX_ULONG = 0x7FFFFFFF
+*/
+
 function binlen(value: number): number {
 
     let index: number
