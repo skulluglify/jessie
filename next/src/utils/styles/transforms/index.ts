@@ -480,7 +480,7 @@ export class skWebStyleTransforms extends Object implements IskWebStyleTransform
         return this
     }
 
-    get maps(): IskObjectWrapper<string | symbol, any> {
+    get maps(): IskObjectWrapper<any> {
 
         return new skObjectWrapper(Object.fromEntries([
             [ "none", null ],
@@ -541,7 +541,7 @@ export class skWebStyleTransforms extends Object implements IskWebStyleTransform
             let name: string
             let params: string
             let isfun: boolean
-            let maps: IskObjectWrapper<IskObjectWrapperTypeKey, any>
+            let maps: IskObjectWrapper<any>
             let keeps: IskArrayWrapper<string>
             let temps: IskArrayWrapper<string>
             let stringMap: IskStringMap
@@ -588,23 +588,6 @@ export class skWebStyleTransforms extends Object implements IskWebStyleTransform
                 if (c == ")" && isfun && r == 0) {
 
                     //!BUGS
-                    // ValueTyped.PIXEL
-                    // ValueTyped.CM
-                    // ValueTyped.MM
-                    // ValueTyped.Q // quarter-millimeters
-                    // ValueTyped.IN
-                    // ValueTyped.PT
-                    // ValueTyped.PC
-                    // ValueTyped.PERCENT // Relative // %
-                    // ValueTyped.EX
-                    // ValueTyped.CH
-                    // ValueTyped.EM
-                    // ValueTyped.REM
-                    // vh / vw / vmin / vmax
-                    // s / ms
-                    // deg / rad / grad / turn
-
-                    //!BUGS
                     // from matrix(12,f(12px,6px),12,20,2,4)
                     // to matrix(12,f(12px,6px),12,20,2)
                     // evaluate
@@ -612,11 +595,17 @@ export class skWebStyleTransforms extends Object implements IskWebStyleTransform
                     // make parse independent
                     let args: Array<string> = params.split(",").map((e: string) => e.trim())
 
-                    let def_name: string = keeps.end()
+                    let def_name: string | null = keeps.end()
 
-                    let transforms: Function | null = maps.get(def_name)
+                    if (!!def_name) {
 
-                    if (!!transforms) transforms.bind(this)(...args)
+                        if (skWrapperChecker.isString(def_name)) {
+        
+                            let transforms: Function | null = maps.get(def_name)
+        
+                            if (!!transforms) transforms.bind(this)(...args)
+                        }
+                    }
 
                     isfun = false
                     params = ""
@@ -1060,3 +1049,4 @@ export class skWebStyleTransforms extends Object implements IskWebStyleTransform
 
 // toString
 // toRelativeString
+// toFixedString

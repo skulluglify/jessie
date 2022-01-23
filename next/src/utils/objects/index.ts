@@ -79,7 +79,7 @@ export class skWrapperChecker extends Object implements IskWrapperChecker {
     }
 }
 
-export class skObjectWrapper<T, U> extends Object implements IskObjectWrapper<T, U> {
+export class skObjectWrapper<T> extends Object implements IskObjectWrapper<T> {
 
     constructor(o?: object) {
 
@@ -88,7 +88,7 @@ export class skObjectWrapper<T, U> extends Object implements IskObjectWrapper<T,
         if (!!o && skWrapperChecker.isObject(o)) this.update(o)
     }
 
-    get(key: string): any {
+    get(key: string): T | null {
 
         let map: IskObjectWrapperTypes
 
@@ -108,13 +108,13 @@ export class skObjectWrapper<T, U> extends Object implements IskObjectWrapper<T,
         return null
     }
 
-    contains(keyOrValue: any): boolean {
+    contains(item: T): boolean {
 
-        if (skWrapperChecker.isDefine(keyOrValue)) {
+        if (skWrapperChecker.isDefine(item)) {
 
             for (let [ k, v ] of this) {
 
-                if ([ k, v ].includes(keyOrValue)) {
+                if ([ k, v ].includes(item)) {
 
                     return true
                 }
@@ -124,7 +124,7 @@ export class skObjectWrapper<T, U> extends Object implements IskObjectWrapper<T,
         return false 
     }
 
-    set(key: string, value: any): void {
+    set(key: string, value: T): void {
         
         if (!!key && this.hasOwnProperty(key)) {
 
@@ -132,7 +132,7 @@ export class skObjectWrapper<T, U> extends Object implements IskObjectWrapper<T,
         }
     }
     
-    put(key: string, value: any): void {
+    put(key: string, value: T): void {
         
         Object.defineProperty(this, key, {
 
@@ -289,7 +289,7 @@ export class skObjectWrapper<T, U> extends Object implements IskObjectWrapper<T,
 
 }
 
-export class skArrayWrapper<T> extends Array implements IskArrayWrapper<T> {
+export class skArrayWrapper<T> extends Array implements Array<T>, IskArrayWrapper<T> {
 
     constructor(o?: Array<any>) {
 
@@ -301,7 +301,7 @@ export class skArrayWrapper<T> extends Array implements IskArrayWrapper<T> {
         }
     }
 
-    get(index: number): any {
+    get(index: number): T | null {
         
         if (0 <= index && index < this.length) {
 
@@ -311,12 +311,12 @@ export class skArrayWrapper<T> extends Array implements IskArrayWrapper<T> {
         return null
     }
 
-    contains(value: any): boolean {
+    contains(value: T): boolean {
         
         return skWrapperChecker.isDefine(value) && this.includes(value)
     }
     
-    set(index: number, value: any): void {
+    set(index: number, value: T): void {
         
         if (0 <= index && index < this.length) {
 
@@ -330,7 +330,7 @@ export class skArrayWrapper<T> extends Array implements IskArrayWrapper<T> {
         }
     }
 
-    update(o: Array<any>) {
+    update(o: Array<T>) {
 
         if (skWrapperChecker.isArray(o)) {
 
@@ -350,10 +350,10 @@ export class skArrayWrapper<T> extends Array implements IskArrayWrapper<T> {
         this.splice(0, this.length)
     }
 
-    equals(o: Array<any>): boolean {
+    equals(o: Array<T>): boolean {
         
-        let a: Array<any> = this
-        let b: Array<any> = o
+        let a: Array<T> = this
+        let b: Array<T> = o
 
         if (a.length != b.length) return true
 
@@ -368,7 +368,7 @@ export class skArrayWrapper<T> extends Array implements IskArrayWrapper<T> {
         return true
     }
 
-    stack(o: Array<any>): void {
+    stack(o: Array<T>): void {
         
         this.clear()
         if (!!o && skWrapperChecker.isArray(o)) {
@@ -381,7 +381,7 @@ export class skArrayWrapper<T> extends Array implements IskArrayWrapper<T> {
         }
     }
 
-    remove(value: string): void {
+    remove(value: T): void {
 
         if (this.contains(value)) {
 
@@ -394,12 +394,12 @@ export class skArrayWrapper<T> extends Array implements IskArrayWrapper<T> {
         return !(this.length > 0)
     }
 
-    start(): any {
+    start(): T | null {
 
         return this.length > 0 ? this.get(0) : null 
     }
 
-    end(): any {
+    end(): T | null {
 
         return this.length > 0 ? this.get(this.length - 1) : null 
     }

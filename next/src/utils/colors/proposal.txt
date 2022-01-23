@@ -1,0 +1,57 @@
+R
+G
+B
+M = Math.max(R,G,B)
+m = Math.min(R,G,B)
+C = M - m
+
+if (C == 0) {
+  
+  H = undefined 
+
+} else
+if (M == R) {
+
+  H = ((G-B)/C) % 6
+  
+} else
+if (M == G) {
+
+  H = ((B-R)/C) + 2
+
+} else
+if (M == B) {
+
+  H = ((R-G)/C) + 4
+
+}
+
+// H = 60/360 * H
+H = 1.0/6.0 * H
+
+a = 1.0/2.0 * ( 2 * R - G - B )
+b = Math.sqrt(3.0) / 2.0 * ( G - B )
+h = Math.atan2(b,a)
+c = Math.hypot(a,b)
+
+I = 1.0/3.0 * ( R + G + B )
+
+V = M
+
+L = 1.0/2.0 * (M + m)
+
+Y601 = 0.2989 * R + 0.5870 * G + 0.1140 * B
+Y240 = 0.212 * R + 0.701 * G + 0.087 * B
+Y709 = 0.2126 * R + 0.7152 * G + 0.0722 * B
+Y2020 = 0.2627 * R + 0.6780 * G + 0.0593 * B
+
+Sv = V && C/V
+
+if (L == 1 || L == 0) Sl = 0
+else
+if (L <= 1.0/2.0) Sl = C / 2 * L
+else
+if (L > 1.0/2.0) Sl = C / 2 - 2 * L
+
+if (I == 0) Si = 0
+else Si = 1 - m / I
