@@ -6,6 +6,26 @@ function ppow(value: number, dist: number): number {
     return 1
 }
 
+// bitwise %
+function mod(value: number, dist: number): number {
+
+    let m: number
+    m = 0
+
+    while (m < value) {
+
+        m = m + dist
+    }
+
+    if (m == value) return 0
+
+    m = m - value
+
+    return dist - m
+}
+
+Object.defineProperty(global, "mod", {value: mod, writable: false})
+
 function bitwise_and(value: number, dist: number): number {
 
     let index: number
