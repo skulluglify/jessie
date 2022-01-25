@@ -6,6 +6,7 @@ import skString from "./strings"
 
 import "./styles"
 import "./cvt"
+import { skVCByteArrayStatic } from "./vc/memory"
 
 
 Object.defineProperty(global, "skWebMath", {
@@ -24,6 +25,14 @@ Object.defineProperty(global, "skWebColor", {
 
 Object.defineProperty(global, "skWrapper", {
 	value: new skWrapper,
+	configurable: true,
+	enumerable: true,
+	writable: false
+})
+
+
+Object.defineProperty(global, "skVCByteArrayStatic", {
+	value: skVCByteArrayStatic,
 	configurable: true,
 	enumerable: true,
 	writable: false
