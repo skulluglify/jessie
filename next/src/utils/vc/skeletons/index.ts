@@ -45,6 +45,7 @@ interface IskVCByteArrayStatic {
     type: skVCTypesShort
     size: number
     constructor: Function
+    init(): void
     set(index: number, value: number): void
     get(index: number): number
     getLength(): number
